@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>Judgmental Eye Further Study | Devmountain Foundations</title>
+
+      <link
+        href="_static/pygments.css"
+        rel="stylesheet"
+        type="text/css"
+      />
+      <link href="_static/devmountain.css" rel="stylesheet" type="text/css" />
+          <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+          <link rel="stylesheet" type="text/css" href="_static/devmountain.css" />
+          <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+          <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+
+      <script src="_static/pdfobject.min.js"></script>
+      
+  </head>
+  <body>
+      <div id="handouts-container">
+        <header id="page-header">
+            <p id="project-title">Devmountain Foundations</p>
+            <p id="page-title">Judgmental Eye Further Study</p>
+              <p id="backlink">
+                <a href="/"> &laquo; Back to Homepage </a>
+              </p>
+        </header>
+
+        <nav id="page-toc"><ul>
+<li><a class="reference internal" href="#">Judgmental Eye Further Study</a><ul>
+<li><a class="reference internal" href="#learning-to-judge">Learning To Judge</a><ul>
+<li><a class="reference internal" href="#so-what">So What?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#teaching-a-computer-to-love-and-hate">Teaching a Computer to Love and Hate</a><ul>
+<li><a class="reference internal" href="#step-1">Step 1</a></li>
+<li><a class="reference internal" href="#steps-2-3">Steps 2, 3</a></li>
+<li><a class="reference internal" href="#step-4-and-5">Step 4 and 5</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#making-our-app-predictive">Making Our App Predictive</a></li>
+<li><a class="reference internal" href="#building-a-being-of-pure-malice">Building a Being of Pure Malice</a></li>
+<li><a class="reference internal" href="#the-end">The End</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+
+        <main id="page-content">
+            <section class="section" id="judgmental-eye-further-study">
+<h1>Judgmental Eye Further Study</h1>
+<p>By this time, our judgmental app has approached feature completion.</p>
+<p>If you didn’t finish, or you’d like to get a sense of how
+others might build it, you should check out the
+<a class="reference external" href="solution/index.html">Step 2 Solution</a>.</p>
+<p>You may be wondering at this point where the judgement comes into play with
+the Judgemental Eye. Well, wonder no more. We’re going to build it.</p>
+<section class="section" id="learning-to-judge">
+<h2>Learning To Judge</h2>
+<p>The core to the concept of the Judgemental Eye is something called the
+<em>Pearson Correlation</em>. The Pearson correlation is a way to judge how similar
+two things are to each other, based on some arbitrary shared number. An
+abstract definition is difficult to grasp, so we’ll look at a simple example
+using film ratings.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Movies</p></th>
+<th class="head"><p>Movie A</p></th>
+<th class="head"><p>Movie B</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>User 1</p></td>
+<td><p>5</p></td>
+<td><p>3</p></td>
+</tr>
+<tr class="row-odd"><td><p>User 2</p></td>
+<td><p>5</p></td>
+<td><p>3</p></td>
+</tr>
+</tbody>
+</table>
+<p>Let’s say we wanted to produce a number that indicated how similar User 1
+was to User 2. Arbitrarily, we’ll choose a scale from <code class="docutils literal notranslate"><span class="pre">-1</span></code> to <code class="docutils literal notranslate"><span class="pre">1</span></code>, with
+<code class="docutils literal notranslate"><span class="pre">-1</span></code> being complete opposites, and 1 being twins in terms of similarity.
+Looking at our table above, we can intuit that because they have identical
+ratings for the two movies in question, they’re a <code class="docutils literal notranslate"><span class="pre">1.0</span></code> in terms of
+similarity on our scale. Let’s expand the table.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Movies</p></th>
+<th class="head"><p>Movie A</p></th>
+<th class="head"><p>Movie B</p></th>
+<th class="head"><p>Movie C</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>User 1</p></td>
+<td><p>5</p></td>
+<td><p>3</p></td>
+<td><p>4</p></td>
+</tr>
+<tr class="row-odd"><td><p>User 2</p></td>
+<td><p>5</p></td>
+<td><p>3</p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="row-even"><td><p>User 3</p></td>
+<td><p>-</p></td>
+<td><p>3</p></td>
+<td><p>5</p></td>
+</tr>
+</tbody>
+</table>
+<p>In our new table, we have new information, and can make new statements about
+our users and movies. User 1 and User 2 are still very similar, but for
+Movie C, they have differing ratings. The difference in that rating isn’t
+much, and when taken as a whole with the other two movies, User 1 really
+isn’t all that different from User 2. They’re not a perfect <code class="docutils literal notranslate"><span class="pre">1.0</span></code> anymore,
+but close, perhaps above a <code class="docutils literal notranslate"><span class="pre">0.9</span></code>. On the other hand, for the two movies they
+have in common, User 2 and User 3 have identical ratings. User 3 doesn’t
+have an entry for Movie A, perhaps because they haven’t seen it, but as far
+as we know, User 2 and User 3 have exactly the same tastes, and are a <code class="docutils literal notranslate"><span class="pre">1.0</span></code>
+in terms of similarity.</p>
+<p>Let’s transpose the table, putting movies on the Y-axis, and users on the
+X-axis:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Users</p></th>
+<th class="head"><p>User 1</p></th>
+<th class="head"><p>User 2</p></th>
+<th class="head"><p>User 3</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Movie A</p></td>
+<td><p>5</p></td>
+<td><p>5</p></td>
+<td><p>-</p></td>
+</tr>
+<tr class="row-odd"><td><p>Movie B</p></td>
+<td><p>3</p></td>
+<td><p>3</p></td>
+<td><p>3</p></td>
+</tr>
+<tr class="row-even"><td><p>Movie C</p></td>
+<td><p>4</p></td>
+<td><p>5</p></td>
+<td><p>5</p></td>
+</tr>
+</tbody>
+</table>
+<p>Looking at it this way, we can extract some slightly different data.
+Comparing the ratings across rows, we can see that for the users who’ve seen
+it, Movie A is very similar to Movie C. The users the two movies have in
+common have rated the movie similarly. On the other hand, Movie B is not
+especially similar to either Movie A or Movie C; there doesn’t seem to be
+much of a correlation at all. It’s hard to say, based on the rows, whether
+liking Movie C is any indication of liking Movie B.</p>
+<p>Let’s look at one more table, with new data for User 4 and User 5:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Movies</p></th>
+<th class="head"><p>Movie A</p></th>
+<th class="head"><p>Movie B</p></th>
+<th class="head"><p>Movie C</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>User 1</p></td>
+<td><p>5</p></td>
+<td><p>3</p></td>
+<td><p>4</p></td>
+</tr>
+<tr class="row-odd"><td><p>User 2</p></td>
+<td><p>5</p></td>
+<td><p>3</p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="row-even"><td><p>User 3</p></td>
+<td><p>-</p></td>
+<td><p>3</p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="row-odd"><td><p>User 4</p></td>
+<td><p>1</p></td>
+<td><p>3</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p>User 5</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+</tr>
+</tbody>
+</table>
+<p>User 4 seems to have completely opposite ratings from User 1, consistently
+so. This is an example of users who have negative correlations, a full
+<code class="docutils literal notranslate"><span class="pre">-1.0</span></code>. They’re predictably opposite each other for all the movies that
+they’ve both seen. User 5, on the other hand, rates completely independently
+from User 1. User 1 rating something high doesn’t give any indication of whether
+User 5 will rate low or high.</p>
+<p>We can take this idea and formalize it. For any row in these tables,
+similarity can be determined by how <em>close</em> their ratings are to each other
+for any columns they have in common. Specifically, we can determine
+closeness of two ratings by subtracting one from the other. If we take those
+deltas and square them, then do some clever arithmetic to normalize the
+number so that it falls between <code class="docutils literal notranslate"><span class="pre">-1</span></code> and <code class="docutils literal notranslate"><span class="pre">1</span></code>, we get the Pearson
+correlation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate the pearson score</span>
+
+<span class="n">num_critics</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">common_critics</span><span class="p">)</span>
+
+<span class="n">product_sum</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">n</span> <span class="o">*</span> <span class="n">m</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">])</span>
+
+<span class="n">num</span> <span class="o">=</span> <span class="n">product_sum</span> <span class="o">-</span> <span class="p">(</span> <span class="p">(</span><span class="n">film1_sum</span> <span class="o">*</span> <span class="n">film2_sum</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_critics</span> <span class="p">)</span>
+
+<span class="n">den</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">film1_sum_square</span> <span class="o">-</span> <span class="nb">pow</span><span class="p">(</span><span class="n">film1_sum</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_critics</span><span class="p">)</span> <span class="o">*</span>
+        <span class="p">(</span><span class="n">film2_sum_square</span> <span class="o">-</span> <span class="nb">pow</span><span class="p">(</span><span class="n">film2_sum</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_critics</span><span class="p">)</span>
+      <span class="p">)</span>
+
+<span class="n">pearson</span> <span class="o">=</span> <span class="n">num</span> <span class="o">/</span> <span class="n">den</span>
+</pre></div>
+</div>
+<p>Here’s an example of a piece of code we don’t need to fully
+understand. From a high level, it finds all the common columns between two
+rows in our data table, takes the difference between the two, and blends it
+into a fraction between <code class="docutils literal notranslate"><span class="pre">-1</span></code> and <code class="docutils literal notranslate"><span class="pre">1</span></code> that represents the similarity
+between the rows. That’s sufficient to understand how to use it. In fact, we
+can go even higher and still be able to use this function: if we feed two
+lists of ratings into a Pearson function, we get a number that represents
+similarity.</p>
+<p>You’ll find an implementation of the Pearson correlation in <cite>correlation.py</cite>.
+You’ll want to import the function in this into your <cite>model.py</cite> file.</p>
+<p>Obviously, it’s difficult to draw broad, sweeping generalizations based off
+of 15 data points. Fortunately, we have close to 100,000 data points, courtesy
+of the MovieLens 100k data set. With bigger data sets, we can make more
+accurate and definitive claims about how users and movies are similar to each
+other.</p>
+<section class="section" id="so-what">
+<h3>So What?</h3>
+<p>Imagine that you know User A and User B have a correlation of <code class="docutils literal notranslate"><span class="pre">1.0</span></code> over the
+span of 20 movies: they vote identically for the things that are common
+between them. User A now watches some movie <em>X</em> and rates it a <code class="docutils literal notranslate"><span class="pre">5</span></code>. What would
+you expect User B to rate the same movie?</p>
+<p>It’s only sensible to expect that User B will also rate it a <code class="docutils literal notranslate"><span class="pre">5</span></code>, given
+their history. Using this knowledge, we can predict how a user will rate a
+movie simply by finding another user with a high correlation coefficient who
+has seen the movie in question. The first user’s rating will likely be
+somewhere in the region of the second user. The converse is true: if we
+find a user with a negative correlation, we can just take <em>their</em> rating
+and invert it.</p>
+<p>Using this, we can now build the <strong>Judgmental Eye</strong>.</p>
+</section>
+</section>
+<section class="section" id="teaching-a-computer-to-love-and-hate">
+<h2>Teaching a Computer to Love and Hate</h2>
+<p>The Judgmental Eye is a malevolent being whose sole purpose in life is to
+pass judgment on people’s movie tastes. Here is the behavior of the Eye:</p>
+<ol class="arabic simple">
+<li><p>When a user views a movie they haven’t rated, the Eye predicts how that
+user will rate that movie.</p></li>
+<li><p>Once a user has either rated the movie or received a prediction, the Eye
+will find its own rating score for that movie, predicting the number if it
+has to.</p></li>
+<li><p>The Eye will take the difference of the two ratings, and criticize the
+user for their tastes.</p></li>
+</ol>
+<p>All of this hinges on a way to guess how a person (the user, or the Eye)
+would rate a movie. If the person has already rated the movie, we can just
+use that number. If they haven’t, we have to guess. Here’s the process for
+guessing:</p>
+<ol class="arabic simple">
+<li><p>Given a user <cite>U</cite> who has not rated movie <cite>M</cite>, find all <em>other</em> users who
+have rated that movie.</p></li>
+<li><p>For each other user <cite>O</cite>, find the movies they have rated in common with
+user <cite>U</cite>.</p></li>
+<li><p>Pair up the common movies, then feed each pair list into the Pearson
+function to find similarity <cite>S</cite>.</p></li>
+<li><p>Rank the users by their similarities, and find the user <cite>O’</cite> with the highest
+similarity. (By the way, <cite>O’</cite> is pronounced “O-prime.”)</p></li>
+<li><p>Multiply the similarity coefficient of user <cite>O’</cite> with their rating for
+movie <cite>M</cite>. This is your predicted rating.</p></li>
+</ol>
+<p>In a simple case, if user <cite>U</cite> needs a prediction for <em>Toy Story</em>, we first find
+everyone else who has seen <em>Toy Story</em>, and collect all their movie ratings.
+Using their ratings, we can run a Pearson correlation and find user <cite>V</cite> who
+rates movies very similarly to user <cite>U</cite>, with a coefficient of <code class="docutils literal notranslate"><span class="pre">0.9</span></code>. If user
+<cite>V</cite> rated <em>Toy Story</em> at 5 stars, it’s not unreasonable to guess that user <cite>U</cite>
+will rate it at <code class="docutils literal notranslate"><span class="pre">5</span> <span class="pre">*</span> <span class="pre">0.9</span> <span class="pre">=</span> <span class="pre">4.5</span></code> stars.</p>
+<p>It sounds complicated, but we’ll break down each step in code. Start Python,
+loading your model file in interactive mode (<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-i</span> <span class="pre">model.py</span></code>). First,
+we’ll grab a user who hasn’t seen <em>Toy Story</em>, as well as the movie record
+itself. For the purpose of this example, we know the user with the <cite>user_id</cite> of 1 hasn’t rated it. (Note that if you’ve re-seeded your database without dropping it and re-creating it, you may not have a user with the <cite>user_id</cite> 1. In this case, use <code class="docutils literal notranslate"><span class="pre">psql</span></code> to query your users table directly and find the first valid <cite>user_id</cite>.)</p>
+<section class="section" id="step-1">
+<h3>Step 1</h3>
+<p><strong>Important First Step</strong>: make sure you’ve gone in and rated several films as
+the user for which you’re logged in. Otherwise, you’ll have no similarities
+for the algorithms below to find.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">Movie</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Toy Story&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>    <span class="c1"># someone we know who hasn&#39;t rated TS</span>
+</pre></div>
+</div>
+<p>Now, we need to get a list of her ratings:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ratings</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">ratings</span>
+</pre></div>
+</div>
+<p>Next, we need to get a list of other users who <em>have</em> rated the movie:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">other_ratings</span> <span class="o">=</span> <span class="n">Rating</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">movie_id</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">movie_id</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">other_users</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">user</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">other_ratings</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section class="section" id="steps-2-3">
+<h3>Steps 2, 3</h3>
+<p>We’ll need to go through each user and find the movies they have in common
+with our first user to be able to use our Pearson function:</p>
+<p>Assuming we had data like:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 18%" />
+<col style="width: 18%" />
+<col style="width: 18%" />
+<col style="width: 18%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Movies</p></th>
+<th class="head"><p>Movie 1</p></th>
+<th class="head"><p>Movie 2</p></th>
+<th class="head"><p>Movie 3</p></th>
+<th class="head"><p>Movie 4</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>User A</p></td>
+<td><p>5</p></td>
+<td><p>3</p></td>
+<td><p>4</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-odd"><td><p>User B</p></td>
+<td><p>5</p></td>
+<td><p>3</p></td>
+<td><p>-</p></td>
+<td><p>3</p></td>
+</tr>
+</tbody>
+</table>
+<p>We collect the common movies (1, 2 and 4) and group them by pairs. The first
+element in the pair is User A’s rating. The second is User B’s. It doesn’t
+matter what order the movies are paired in as long as they match up.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">correlation</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">score_pairs</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">correlation</span><span class="o">.</span><span class="n">pearson</span><span class="p">(</span><span class="n">score_pairs</span><span class="p">))</span>
+<span class="go">0.944911182523</span>
+</pre></div>
+</div>
+<p>At this point, I encourage you to figure out how to generate that pair list
+on your own and skip straight to step 4. If you need a little assistance,
+read on.</p>
+<p>From before, we have our user <cite>u</cite>, and our list of other users,
+<cite>other_users</cite>. First, let’s peel off a single user from the list to test
+against.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">o</span> <span class="o">=</span> <span class="n">other_users</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Now, we want to go through <cite>o.ratings</cite> and find out if any of those ratings
+pair up with our first user’s ratings. We could do something naive like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">paired_ratings</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">r1</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">ratings</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">r2</span> <span class="ow">in</span> <span class="n">o</span><span class="o">.</span><span class="n">ratings</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">if</span> <span class="n">r1</span><span class="o">.</span><span class="n">movie_id</span> <span class="o">==</span> <span class="n">r2</span><span class="o">.</span><span class="n">movie_id</span><span class="p">:</span>
+<span class="gp">... </span>            <span class="n">paired_ratings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">r1</span><span class="o">.</span><span class="n">score</span><span class="p">,</span> <span class="n">r2</span><span class="o">.</span><span class="n">score</span><span class="p">)</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>The problem with this is that it is what we call O(n²) performance.
+Assume that user <cite>u</cite> has <em>n</em> ratings, and user <cite>o</cite> has <em>n</em> ratings as well. The
+two loops in this example tell the computer to loop through <cite>u.ratings</cite>, and for
+each rating in that list, loop through <cite>o.ratings</cite> to find a match, based on
+<cite>movie_id</cite> of each rating. This means it has to loop <cite>n</cite> × <cite>n</cite> times to go
+through all the rating pairs. If they both have a lot of ratings, this query
+could potentially take a long time. Let’s try something different with
+dictionaries. Experiment first on your own.</p>
+<div class="admonition hint">
+<p class="admonition-title">Finding Overlapping Movies</p>
+<details class="admonition-body"><summary></summary><div class="admonition-body docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">u_ratings</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">ratings</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">u_ratings</span><span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">movie_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">paired_ratings</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">o_rating</span> <span class="ow">in</span> <span class="n">o</span><span class="o">.</span><span class="n">ratings</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">u_rating</span> <span class="o">=</span> <span class="n">u_ratings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">o_rating</span><span class="o">.</span><span class="n">movie_id</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">if</span> <span class="n">u_rating</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="n">pair</span> <span class="o">=</span> <span class="p">(</span><span class="n">u_rating</span><span class="o">.</span><span class="n">score</span><span class="p">,</span> <span class="n">o_rating</span><span class="o">.</span><span class="n">score</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="n">paired_ratings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details></div>
+<p>The first
+thing it does is create a dictionary, and loop through <cite>u.ratings</cite>, putting
+every rating in the dictionary, using the <cite>movie_id</cite> for that rating as the
+key.</p>
+<p>Second, it loops through <cite>o.ratings</cite>, then checks to see if there’s a
+record in the dictionary that matches the <cite>movie_id</cite>. That would mean that
+the user <cite>u</cite> <em>also</em> rated the movie in question. If they did, then it puts
+that pair of ratings in our pair list.</p>
+<p>This is useful, and we’re going to do
+this once for each user, so we should put it in a function. We should also
+feed the pair list to the <code class="docutils literal notranslate"><span class="pre">pearson()</span></code> function at the end, if there’s at
+least one pair in it. We could put this as a free-standing function in the
+model file:</p>
+<div class="admonition hint">
+<p class="admonition-title">As Free-Standing Function in <cite>model.py</cite></p>
+<details class="admonition-body"><summary></summary><div class="admonition-body docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">correlation</span>
+
+<span class="c1"># ...</span>
+
+<span class="k">def</span> <span class="nf">similarity</span><span class="p">(</span><span class="n">user1</span><span class="p">,</span> <span class="n">user2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return Pearson rating for user1 compared to user2.&quot;&quot;&quot;</span>
+
+    <span class="n">u_ratings</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">paired_ratings</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">user1</span><span class="o">.</span><span class="n">ratings</span><span class="p">:</span>
+        <span class="n">u_ratings</span><span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">movie_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span>
+
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">user2</span><span class="o">.</span><span class="n">ratings</span><span class="p">:</span>
+        <span class="n">u_r</span> <span class="o">=</span> <span class="n">u_ratings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">movie_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">u_r</span><span class="p">:</span>
+            <span class="n">paired_ratings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">u_r</span><span class="o">.</span><span class="n">score</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">score</span><span class="p">)</span> <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">paired_ratings</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">correlation</span><span class="o">.</span><span class="n">pearson</span><span class="p">(</span><span class="n">paired_ratings</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+</pre></div>
+</div>
+</div>
+</details></div>
+<p>But we can do one better. Since this function returns the similarity of
+users, we can put this on the User class.</p>
+<div class="admonition hint">
+<p class="admonition-title">As Method on the User Class</p>
+<details class="admonition-body"><summary></summary><div class="admonition-body docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+    <span class="k">def</span> <span class="nf">similarity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return Pearson rating for user compared to other user.&quot;&quot;&quot;</span>
+
+        <span class="n">u_ratings</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">paired_ratings</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ratings</span><span class="p">:</span>
+            <span class="n">u_ratings</span><span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">movie_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span>
+
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">ratings</span><span class="p">:</span>
+            <span class="n">u_r</span> <span class="o">=</span> <span class="n">u_ratings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">movie_id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">u_r</span><span class="p">:</span>
+                <span class="n">paired_ratings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">u_r</span><span class="o">.</span><span class="n">score</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">score</span><span class="p">)</span> <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">paired_ratings</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">correlation</span><span class="o">.</span><span class="n">pearson</span><span class="p">(</span><span class="n">paired_ratings</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+
+</pre></div>
+</div>
+</div>
+</details></div>
+<p>Now, we can do this in an interactive shell:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">u1</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u2</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">u1</span><span class="o">.</span><span class="n">similarity</span><span class="p">(</span><span class="n">u2</span><span class="p">))</span>
+<span class="go">0.16084123285437085</span>
+</pre></div>
+</div>
+</section>
+<section class="section" id="step-4-and-5">
+<h3>Step 4 and 5</h3>
+<p>Given a list of users, we can find their similarity coefficients:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">Movie</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Toy Story&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Find other people who&#39;s rated this movie</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">other_users</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">user</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">ratings</span><span class="p">]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">other_u</span> <span class="ow">in</span> <span class="n">other_users</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">similarity</span><span class="p">(</span><span class="n">other_u</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Now, we want to rank them. Again, there are a lot of ways to do this, and
+you should try on your own, but read on for hints.</p>
+<p>The easiest way to rank users is simply to use the <code class="docutils literal notranslate"><span class="pre">sorted()</span></code> function;
+since the list is a list of tuples, it will sort them by the first item in each
+tuple and, if those match, it will sort by the second (a list of
+<code class="docutils literal notranslate"><span class="pre">[(1,</span> <span class="pre">&quot;Z&quot;),</span> <span class="pre">(1,</span> <span class="pre">&quot;A&quot;),</span> <span class="pre">(2,</span> <span class="pre">&quot;A&quot;),</span> <span class="pre">(1,</span> <span class="pre">&quot;C&quot;)]</span></code> will sort into
+<code class="docutils literal notranslate"><span class="pre">[(1,</span> <span class="pre">&quot;A&quot;),</span> <span class="pre">(1,</span> <span class="pre">&quot;C&quot;),</span> <span class="pre">(1,</span> <span class="pre">&quot;Z&quot;),</span> <span class="pre">(2,</span> <span class="pre">&quot;A&quot;)]</span></code>).</p>
+<div class="admonition hint">
+<p class="admonition-title">Ranking Users</p>
+<details class="admonition-body"><summary></summary><div class="admonition-body docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">users</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">other_u</span> <span class="ow">in</span> <span class="n">other_users</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">similarity</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">similarity</span><span class="p">(</span><span class="n">other_u</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">pair</span> <span class="o">=</span> <span class="p">(</span><span class="n">similarity</span><span class="p">,</span> <span class="n">other_u</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">users</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sorted_users</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">users</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">top_user</span> <span class="o">=</span> <span class="n">sorted_users</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</details></div>
+<p>Given the top user, we can then use the similarity coefficient to make a
+prediction.</p>
+<div class="admonition hint">
+<p class="admonition-title">Making Prediction</p>
+<details class="admonition-body"><summary></summary><div class="admonition-body docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sim</span><span class="p">,</span> <span class="n">best_match_user</span> <span class="o">=</span> <span class="n">top_user</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">best_rating</span> <span class="o">=</span> <span class="n">Rating</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">movie_id</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">movie_id</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">user_id</span><span class="o">=</span><span class="n">best_match_user</span><span class="o">.</span><span class="n">user_id</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">predicted_rating</span> <span class="o">=</span> <span class="n">sim</span> <span class="o">*</span> <span class="n">best_rating</span><span class="o">.</span><span class="n">score</span>
+</pre></div>
+</div>
+</div>
+</details></div>
+<p>Let’s take this all and put this in a function, again in <cite>model.py</cite>.</p>
+<div class="admonition hint">
+<p class="admonition-title">Predict Rating Function</p>
+<details class="admonition-body"><summary></summary><div class="admonition-body docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">predict_rating</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">movie</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Predict a user&#39;s rating of a movie.&quot;&quot;&quot;</span>
+
+    <span class="n">other_ratings</span> <span class="o">=</span> <span class="n">movie</span><span class="o">.</span><span class="n">ratings</span>
+    <span class="n">other_users</span> <span class="o">=</span> <span class="p">[</span> <span class="n">r</span><span class="o">.</span><span class="n">user</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">other_ratings</span> <span class="p">]</span>
+
+    <span class="n">similarities</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">similarity</span><span class="p">(</span><span class="n">other_user</span><span class="p">),</span> <span class="n">other_user</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">other_user</span> <span class="ow">in</span> <span class="n">other_users</span>
+    <span class="p">]</span>
+
+    <span class="n">similarities</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">sim</span><span class="p">,</span> <span class="n">best_match_user</span> <span class="o">=</span> <span class="n">similarities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">rating</span> <span class="ow">in</span> <span class="n">other_ratings</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">rating</span><span class="o">.</span><span class="n">user_id</span> <span class="o">==</span> <span class="n">best_match_user</span><span class="o">.</span><span class="n">user_id</span><span class="p">:</span>
+           <span class="k">return</span> <span class="n">rating</span><span class="o">.</span><span class="n">score</span> <span class="o">*</span> <span class="n">sim</span>
+</pre></div>
+</div>
+</div>
+</details></div>
+<p>Take a careful and thoughtful look at this function.</p>
+<p>Once again, since this is a method pertaining to users and movies, it makes
+sense to be an instance method of one of our classes. The question is, does it
+go on the user instance or the movie instance? In this case, it’s English to
+the rescue. A user will predict their rating of a given movie, so we’ll put
+it there, on the <cite>User</cite> class.</p>
+<div class="admonition hint">
+<p class="admonition-title">Predict Rating Method</p>
+<details class="admonition-body"><summary></summary><div class="admonition-body docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+
+    <span class="c1"># ...</span>
+
+    <span class="k">def</span> <span class="nf">predict_rating</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">movie</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Predict user&#39;s rating of a movie.&quot;&quot;&quot;</span>
+
+        <span class="n">other_ratings</span> <span class="o">=</span> <span class="n">movie</span><span class="o">.</span><span class="n">ratings</span>
+        <span class="n">other_users</span> <span class="o">=</span> <span class="p">[</span> <span class="n">r</span><span class="o">.</span><span class="n">user</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">other_ratings</span> <span class="p">]</span>
+
+        <span class="n">similarities</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">similarity</span><span class="p">(</span><span class="n">other_user</span><span class="p">),</span> <span class="n">other_user</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">other_user</span> <span class="ow">in</span> <span class="n">other_users</span>
+        <span class="p">]</span>
+
+        <span class="n">similarities</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">sim</span><span class="p">,</span> <span class="n">best_match_user</span> <span class="o">=</span> <span class="n">similarities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">rating</span> <span class="ow">in</span> <span class="n">other_ratings</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rating</span><span class="o">.</span><span class="n">user_id</span> <span class="o">==</span> <span class="n">best_match_user</span><span class="o">.</span><span class="n">user_id</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">rating</span><span class="o">.</span><span class="n">score</span> <span class="o">*</span> <span class="n">sim</span>
+</pre></div>
+</div>
+</div>
+</details></div>
+<p>And again, we can do something like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">Movie</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">predict_rating</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
+<span class="go">1.0000000000000013</span>
+</pre></div>
+</div>
+<p>Note, this may take a long time to run, as a lot of queries are being made.
+But now, we have a simple interface to predict how a user will rate a movie.
+But… it’s not very good. Intuitively, the prediction number here is too
+close to 1 to seem correct. Let’s stop and see why.</p>
+<p>If we inject some print statements into our function to see what the
+similarities are like, we can see that there are quite a few users who have
+a similarity of <code class="docutils literal notranslate"><span class="pre">1.0</span></code>. This is a weakness of this method: the fewer ratings
+you have, the less accurate it is. The users who are rated <code class="docutils literal notranslate"><span class="pre">1.0</span></code> in similarity
+are a statistical quirk. It’s quirky enough that we can’t use just one user,
+we’ll have to blend our results together.</p>
+<p>To blend the users, we’ll need to keep track of how similar a user is, as
+well as their actual rating. We’ll change our tuple around, instead of
+having it be composed of <cite>(similarity coeffecient, user instance)</cite>, we’ll make
+it <cite>(similarity coefficient, rating)</cite>.</p>
+<div class="admonition hint">
+<p class="admonition-title">Predict Rating Method, Simpler</p>
+<details class="admonition-body"><summary></summary><div class="admonition-body docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">predict_rating</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">movie</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Predict user&#39;s rating of a movie.&quot;&quot;&quot;</span>
+
+    <span class="n">other_ratings</span> <span class="o">=</span> <span class="n">movie</span><span class="o">.</span><span class="n">ratings</span>
+
+    <span class="n">similarities</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">similarity</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">user</span><span class="p">),</span> <span class="n">r</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">other_ratings</span>
+    <span class="p">]</span>
+
+    <span class="n">similarities</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">sim</span><span class="p">,</span> <span class="n">rating</span> <span class="o">=</span> <span class="n">similarities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">rating</span><span class="o">.</span><span class="n">score</span> <span class="o">*</span> <span class="n">sim</span>
+</pre></div>
+</div>
+</div>
+</details></div>
+<p>This has the added bonus of simplifying our function by quite a bit, since
+we don’t have to do a second pass over the ratings list to find the
+appropriate rating: they’re already matched with the correct similarity.</p>
+<p>Still, this is functionally equivalent to our previous iteration, which
+gives us mediocre results. We still need to blend them. The simplest mechanism
+for blending is called the “weighted mean”. It’s a lot like an average, but
+instead of summing all the rating scores and dividing by the number of ratings,
+we do something that gives more weight to users who are more similar:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># weighted mean:</span>
+<span class="n">mean</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ratings</span> <span class="o">*</span> <span class="n">coefficients</span> <span class="p">)</span> <span class="o">/</span> <span class="nb">sum</span><span class="p">(</span><span class="n">coefficients</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Thus, our Python changes:</p>
+<div class="admonition hint">
+<p class="admonition-title">Predict Rating Method, Weighted</p>
+<details class="admonition-body"><summary></summary><div class="admonition-body docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">predict_rating</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">movie</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Predict user&#39;s rating of a movie.&quot;&quot;&quot;</span>
+
+    <span class="n">other_ratings</span> <span class="o">=</span> <span class="n">movie</span><span class="o">.</span><span class="n">ratings</span>
+
+    <span class="n">similarities</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">similarity</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">user</span><span class="p">),</span> <span class="n">r</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">other_ratings</span>
+    <span class="p">]</span>
+
+    <span class="n">similarities</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">numerator</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">r</span><span class="o">.</span><span class="n">score</span> <span class="o">*</span> <span class="n">sim</span> <span class="k">for</span> <span class="n">sim</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">similarities</span><span class="p">])</span>
+    <span class="n">denominator</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">sim</span> <span class="k">for</span> <span class="n">sim</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">similarities</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span>
+</pre></div>
+</div>
+</div>
+</details></div>
+<p>This is better, but not perfect. The existence of negative similarities has
+the potential to push our prediction <em>beyond</em> the 1 to 5 rating system. We
+have sufficient information in the positive similarities that we can throw
+them out. (Although mathematically, we’d do better to rescale our rating
+system between <code class="docutils literal notranslate"><span class="pre">-1</span></code> and <code class="docutils literal notranslate"><span class="pre">1</span></code>, use the negative coefficients, then rescale it
+back.) Filter out the negative similarities now, being sure to check that you
+still have some ratings left to work with after throwing out negative values:</p>
+<div class="admonition hint">
+<p class="admonition-title">Predict Rating Method, Weighted and Filtered</p>
+<details class="admonition-body"><summary></summary><div class="admonition-body docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">predict_rating</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">movie</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Predict user&#39;s rating of a movie.&quot;&quot;&quot;</span>
+
+        <span class="n">other_ratings</span> <span class="o">=</span> <span class="n">movie</span><span class="o">.</span><span class="n">ratings</span>
+
+        <span class="n">similarities</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">similarity</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">user</span><span class="p">),</span> <span class="n">r</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">other_ratings</span>
+        <span class="p">]</span>
+
+        <span class="n">similarities</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">similarities</span> <span class="o">=</span> <span class="p">[(</span><span class="n">sim</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">sim</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">similarities</span>
+                        <span class="k">if</span> <span class="n">sim</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">similarities</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">numerator</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">r</span><span class="o">.</span><span class="n">score</span> <span class="o">*</span> <span class="n">sim</span> <span class="k">for</span> <span class="n">sim</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">similarities</span><span class="p">])</span>
+        <span class="n">denominator</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">sim</span> <span class="k">for</span> <span class="n">sim</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">similarities</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">numerator</span> <span class="o">//</span> <span class="n">denominator</span>
+
+</pre></div>
+</div>
+</div>
+</details></div>
+<p>This looks pretty good, let’s see how it predicts:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">Movie</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">predict_rating</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
+<span class="go">3.61092409588</span>
+</pre></div>
+</div>
+<p>Good job!</p>
+</section>
+</section>
+<section class="section" id="making-our-app-predictive">
+<h2>Making Our App Predictive</h2>
+<p>To add prediction to our app, we simply have to, when a user views a movie,
+call the prediction function and display the results. In the reference
+implementation, the view we want to modify is <cite>movie_detail</cite>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/movies/&lt;int:movie_id&gt;&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">movie_detail</span><span class="p">(</span><span class="n">movie_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Show info about movie.</span>
+
+<span class="sd">    If a user is logged in, let them add/edit a rating.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">movie</span> <span class="o">=</span> <span class="n">Movie</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">movie_id</span><span class="p">)</span>
+
+    <span class="n">user_id</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;user_id&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">user_id</span><span class="p">:</span>
+        <span class="n">user_rating</span> <span class="o">=</span> <span class="n">Rating</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span>
+            <span class="n">movie_id</span><span class="o">=</span><span class="n">movie_id</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="n">user_id</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">user_rating</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Get average rating of movie</span>
+
+    <span class="n">rating_scores</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">score</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">movie</span><span class="o">.</span><span class="n">ratings</span><span class="p">]</span>
+    <span class="n">avg_rating</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">rating_scores</span><span class="p">))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">rating_scores</span><span class="p">)</span>
+
+    <span class="n">prediction</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Prediction code: only predict if the user hasn&#39;t rated it.</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">user_rating</span><span class="p">)</span> <span class="ow">and</span> <span class="n">user_id</span><span class="p">:</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">user_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">user</span><span class="p">:</span>
+            <span class="n">prediction</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">predict_rating</span><span class="p">(</span><span class="n">movie</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span>
+        <span class="s2">&quot;movie.html&quot;</span><span class="p">,</span>
+        <span class="n">movie</span><span class="o">=</span><span class="n">movie</span><span class="p">,</span>
+        <span class="n">user_rating</span><span class="o">=</span><span class="n">user_rating</span><span class="p">,</span>
+        <span class="n">average</span><span class="o">=</span><span class="n">avg_rating</span><span class="p">,</span>
+        <span class="n">prediction</span><span class="o">=</span><span class="n">prediction</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p>Then, we can add an if statement in our template, <cite>movie.html</cite>, that shows the
+average and prediction if it exists:</p>
+<div class="highlight-html+jinja notranslate"><div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>Average rating: <span class="cp">{{</span> <span class="nv">average</span> <span class="cp">}}</span><span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+<span class="cp">{%</span> <span class="k">if</span> <span class="nv">prediction</span> <span class="cp">%}</span>
+    <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>We predict you will rate this movie <span class="cp">{{</span> <span class="nv">prediction</span> <span class="cp">}}</span>.<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+<span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span>
+</pre></div>
+</div>
+<p>And we’re done!</p>
+</section>
+<section class="section" id="building-a-being-of-pure-malice">
+<h2>Building a Being of Pure Malice</h2>
+<p>Everything is now in place to build <strong>The Eye</strong>. Hopefully, you can guess at
+least a little bit of the how, but we’ll do this step by step.</p>
+<p>In terms of our system, the Eye is just a user with bad taste in movies.
+Every time you view a movie, the Eye will either get its rating or predict
+its own rating for the same movie, then it will berate you endlessly for how
+dissimilar your tastes run, based on the difference between your ratings.</p>
+<p>The first thing to do is create a user to be the judgmental eye. It can be
+an existing user, a real user, or an imaginary user. As an example, we’ll
+make a new user. Running model.py in interactive mode:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">eye</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s2">&quot;the-eye@of-judgment.com&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;evil&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">eye</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Let’s rate some movies:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Toy Story</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">Rating</span><span class="p">(</span><span class="n">user_id</span><span class="o">=</span><span class="n">eye</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">movie_id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Robocop 3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">Rating</span><span class="p">(</span><span class="n">user_id</span><span class="o">=</span><span class="n">eye</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">movie_id</span><span class="o">=</span><span class="mi">1274</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Judge Dredd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">Rating</span><span class="p">(</span><span class="n">user_id</span><span class="o">=</span><span class="n">eye</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">movie_id</span><span class="o">=</span><span class="mi">373</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 3 Ninjas</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">Rating</span><span class="p">(</span><span class="n">user_id</span><span class="o">=</span><span class="n">eye</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">movie_id</span><span class="o">=</span><span class="mi">314</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Aladdin</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">Rating</span><span class="p">(</span><span class="n">user_id</span><span class="o">=</span><span class="n">eye</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">movie_id</span><span class="o">=</span><span class="mi">95</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># The Lion King</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">Rating</span><span class="p">(</span><span class="n">user_id</span><span class="o">=</span><span class="n">eye</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">movie_id</span><span class="o">=</span><span class="mi">71</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Now the Eye officially has bad taste. The Eye can be made more
+interesting by giving it more ratings.</p>
+<p>Next, we want to add the Eye’s opinion to our movie view. We modify our
+prediction code.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="c1"># Either use the prediction or their real rating</span>
+
+    <span class="k">if</span> <span class="n">prediction</span><span class="p">:</span>
+        <span class="c1"># User hasn&#39;t scored; use our prediction if we made one</span>
+        <span class="n">effective_rating</span> <span class="o">=</span> <span class="n">prediction</span>
+
+    <span class="k">elif</span> <span class="n">user_rating</span><span class="p">:</span>
+        <span class="c1"># User has already scored for real; use that</span>
+        <span class="n">effective_rating</span> <span class="o">=</span> <span class="n">user_rating</span><span class="o">.</span><span class="n">score</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># User hasn&#39;t scored, and we couldn&#39;t get a prediction</span>
+        <span class="n">effective_rating</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Get the eye&#39;s rating, either by predicting or using real rating</span>
+
+    <span class="n">the_eye</span> <span class="o">=</span> <span class="p">(</span><span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s2">&quot;the-eye@of-judgment.com&quot;</span><span class="p">)</span>
+                         <span class="o">.</span><span class="n">one</span><span class="p">())</span>
+    <span class="n">eye_rating</span> <span class="o">=</span> <span class="n">Rating</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span>
+        <span class="n">user_id</span><span class="o">=</span><span class="n">the_eye</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">movie_id</span><span class="o">=</span><span class="n">movie</span><span class="o">.</span><span class="n">movie_id</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">eye_rating</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">eye_rating</span> <span class="o">=</span> <span class="n">the_eye</span><span class="o">.</span><span class="n">predict_rating</span><span class="p">(</span><span class="n">movie</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">eye_rating</span> <span class="o">=</span> <span class="n">eye_rating</span><span class="o">.</span><span class="n">score</span>
+
+    <span class="k">if</span> <span class="n">eye_rating</span> <span class="ow">and</span> <span class="n">effective_rating</span><span class="p">:</span>
+        <span class="n">difference</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">eye_rating</span> <span class="o">-</span> <span class="n">effective_rating</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># We couldn&#39;t get an eye rating, so we&#39;ll skip difference</span>
+        <span class="n">difference</span> <span class="o">=</span> <span class="kc">None</span>
+
+</pre></div>
+</div>
+<p>Finally, we use the difference to get a message. We know that the maximum
+difference between a user’s opinion and the eye’s opinion is going to be 4
+(if you rate something a 5 and it rates something a 1, or vice
+versa). If we take the difference, we can use that to choose a message to
+display.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="c1"># Depending on how different we are from the Eye, choose a</span>
+    <span class="c1"># message</span>
+
+    <span class="n">BERATEMENT_MESSAGES</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;I suppose you don&#39;t have such bad taste after all.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I regret every decision that I&#39;ve ever made that has &quot;</span> <span class="o">+</span>
+            <span class="s2">&quot;brought me to listen to your opinion.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Words fail me, as your taste in movies has clearly &quot;</span> <span class="o">+</span>
+            <span class="s2">&quot;failed you.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;That movie is great. For a clown to watch. Idiot.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Words cannot express the awfulness of your taste.&quot;</span>
+    <span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">difference</span><span class="p">:</span>
+        <span class="n">beratement</span> <span class="o">=</span> <span class="n">BERATEMENT_MESSAGES</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">difference</span><span class="p">)]</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">beratement</span> <span class="o">=</span> <span class="kc">None</span>
+
+</pre></div>
+</div>
+<p>We can then pass this <cite>beratement</cite> to the template and display it somewhere
+prominent. See if you can figure out how to make the eye choose from a wider
+selection of messages. (Hint: multiply the difference by something.) Then,
+make your eye more <em>evil</em>.</p>
+</section>
+<section class="section" id="the-end">
+<h2>The End</h2>
+<p>You made it!</p>
+<p>This is a lot to take in – don’t be afraid to review everything you’ve done
+here, and try to do it again. It should be faster the second time around.
+Practice makes perfect, and so on.</p>
+</section>
+</section>
+
+        </main>
+
+        <footer id="page-footer">
+            <p>&copy; 2022 Devmountain</p>
+        </footer>
+      </div>
+
+      <script src="_static/main.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+  </body>
+</html>

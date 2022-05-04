@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>Further Study | Devmountain Foundations</title>
+
+      <link
+        href="_static/pygments.css"
+        rel="stylesheet"
+        type="text/css"
+      />
+      <link href="_static/devmountain.css" rel="stylesheet" type="text/css" />
+          <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+          <link rel="stylesheet" type="text/css" href="_static/devmountain.css" />
+          <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+          <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+
+      <script src="_static/pdfobject.min.js"></script>
+      
+  </head>
+  <body>
+      <div id="handouts-container">
+        <header id="page-header">
+            <p id="project-title">Devmountain Foundations</p>
+            <p id="page-title">Further Study</p>
+              <p id="backlink">
+                <a href="/"> &laquo; Back to Homepage </a>
+              </p>
+        </header>
+
+        <nav id="page-toc"><ul>
+<li><a class="reference internal" href="#">Further Study</a><ul>
+<li><a class="reference internal" href="#addendum-unicode">Addendum: Unicode</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+
+        <main id="page-content">
+            <section class="section" id="further-study">
+<h1>Further Study</h1>
+<section class="section" id="addendum-unicode">
+<h2>Addendum: Unicode</h2>
+<p>Unicode is kind of tough to grasp. It’s a collection of ‘code points’ that
+represent all the known characters in use in modern language, whether it’s
+the western alphabet, or Asian kana systems. The concept of code points is
+really irrelevant to our discussions. The most important thing is that a
+Unicode string is capable of representing any character in any syllabary we
+have a font for.</p>
+<p>The thing is, having this kind of flexibility requires a lot of space. In
+good old ASCII, letters are any one of 52 numbers, both upper and lower
+case. Add in other symbols on the keyboard, a few symbols _not_ on the
+keyboard, and still everything fits in a single byte. Each character only
+needed a single byte to represent it. A string of 30 characters needed 30
+bytes total to store.</p>
+<p>With Unicode, there are 1,114,112 code points, usually represented by 4
+bytes per character. This means in Unicode, a 30 character string needs 120
+bytes for storage. Generally, Unicode is not a good way to _store_ text,
+although it’s a great way to represent text in general.</p>
+<p>Typically, you won’t need all 1 million code points in any given text, so
+encodings exist that allow us to store text and optimize for a particular
+subset of the code points. When we need to share text between components, we
+need to take our encoded text and decode it back into Unicode before
+sending it back.</p>
+<p>In our scenario, a text file is encoded in the ‘latin-1’ encoding, to allow
+us to use an accent mark in our movie titles. Some databases, on the
+other hand, expect to receive Unicode strings from our python code, so we
+need to decode from latin-1 back into Unicode:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">title</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+<span class="n">title</span> <span class="o">=</span> <span class="n">title</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;latin-1&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After this, our ‘title’ variable is a string that stores data as Unicode
+code points, and can be safely passed off to our database.</p>
+</section>
+</section>
+
+        </main>
+
+        <footer id="page-footer">
+            <p>&copy; 2022 Devmountain</p>
+        </footer>
+      </div>
+
+      <script src="_static/main.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+  </body>
+</html>

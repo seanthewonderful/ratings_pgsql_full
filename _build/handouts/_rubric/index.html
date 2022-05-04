@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>Rubric | Devmountain Foundations</title>
+
+      <link
+        href="../_static/pygments.css"
+        rel="stylesheet"
+        type="text/css"
+      />
+      <link href="../_static/devmountain.css" rel="stylesheet" type="text/css" />
+          <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+          <link rel="stylesheet" type="text/css" href="../_static/devmountain.css" />
+          <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+          <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+
+      <script src="../_static/pdfobject.min.js"></script>
+      
+  </head>
+  <body>
+      <div id="handouts-container">
+        <header id="page-header">
+            <p id="project-title">Devmountain Foundations</p>
+            <p id="page-title">Rubric</p>
+              <p id="backlink">
+                <a href="/"> &laquo; Back to Homepage </a>
+              </p>
+        </header>
+
+        <nav id="page-toc"><ul>
+<li><a class="reference internal" href="#">Rubric</a><ul>
+<li><a class="reference internal" href="#todo">TODO</a></li>
+<li><a class="reference internal" href="#goals">Goals</a></li>
+<li><a class="reference internal" href="#gotchas">Gotchas</a></li>
+<li><a class="reference internal" href="#code-reviews">Code Reviews</a></li>
+<li><a class="reference internal" href="#part-one">Part One</a></li>
+<li><a class="reference internal" href="#code-review-1">Code Review 1</a></li>
+<li><a class="reference internal" href="#code-review-2">Code Review 2</a></li>
+<li><a class="reference internal" href="#further-study">Further Study</a></li>
+<li><a class="reference internal" href="#part-two">Part Two</a></li>
+<li><a class="reference internal" href="#id1">Code Review 1</a></li>
+<li><a class="reference internal" href="#id2">Code Review 2</a></li>
+<li><a class="reference internal" href="#code-review-3">Code Review 3</a></li>
+<li><a class="reference internal" href="#part-three">Part Three</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+
+        <main id="page-content">
+            <section class="section" id="rubric">
+<h1>Rubric</h1>
+<dl class="field-list simple">
+<dt class="field-odd">topics</dt>
+<dd class="field-odd"><p>Flask, SQL, HTML/CSS, SQLAlchemy, Machine learning</p>
+</dd>
+<dt class="field-even">time</dt>
+<dd class="field-even"><p>6-10 hours</p>
+</dd>
+</dl>
+<section class="section" id="todo">
+<h2>TODO</h2>
+</section>
+<section class="section" id="goals">
+<h2>Goals</h2>
+</section>
+<section class="section" id="gotchas">
+<h2>Gotchas</h2>
+<ul class="simple">
+<li><p>empty pipe || in the movies file – how to handle that</p></li>
+<li><p>rating IDs autoincrementing every time a seed.py file is run, and ids starting from where they left off (so the first item in the database doesn’t have id=1, it has id=400001…)</p></li>
+<li><p>SQLAlchemy returning Base Query Object because students haven’t added .one, .first or .all to the end of the query.</p></li>
+</ul>
+</section>
+<section class="section" id="code-reviews">
+<h2>Code Reviews</h2>
+</section>
+<section class="section" id="part-one">
+<h2>Part One</h2>
+</section>
+<section class="section" id="code-review-1">
+<h2>Code Review 1</h2>
+<p>Students have created a Movie and Ratings table using SQLAlchemy, pattern matching with the User table that was already in the exercise.</p>
+<p>They should have psql and python running in separate windows.</p>
+<p>There has also been an overview of ORMs, a discussion of the data that we’re using for the exercise, and an outline of the data model.</p>
+<p><strong>Students won’t yet have foreign keys.</strong></p>
+<ul class="simple">
+<li><p>Check what they’ve made nullable to make sure it makes sense with the data model (sometimes students make score nullable in the Rating class)</p></li>
+<li><p>Length of db.String(x) that they’ve given</p></li>
+<li><p>Docstrings might not be updated because they were copied over from the User class example.</p></li>
+</ul>
+</section>
+<section class="section" id="code-review-2">
+<h2>Code Review 2</h2>
+<p>Goes through the rest of Part 1 - adding to the database and reading in seed data.</p>
+<ul class="simple">
+<li><p>Students have created users in Postgres directly and in Python using SQLAlchemy and have played around with how to get info using both methods.</p></li>
+<li><p>Created __repr__() methods (might get the question about why you don’t need to drop your database to update the __repr__ method on the class)</p></li>
+<li><p>Read the seed data and populate the database. Seed.py contains a rough outline of the process. Load_users is already in the file; they need to write movies and ratings.</p></li>
+<li><p>Discussion of autoincrement. We provide a function that starts autoincrement – do students know what it does? Why would there be an error if we didn’t have the set_val_user_id in the seed.py table?</p></li>
+<li><p>Datetime – students need to use strptime to convert the release date string to a datetime object. The instructions provide sample code to do this.</p></li>
+<li><p>Students should strip off the year from each movie title.</p></li>
+<li><p>It is a good high-level point to talk about that the sqlalchemy classes represent tables in SQL and that the instances of the classes represent rows.</p></li>
+</ul>
+</section>
+<section class="section" id="further-study">
+<h2>Further Study</h2>
+<p>Unicode – doesn’t ask for a code review, but gives the students more info on unicode and latin-1.</p>
+</section>
+<section class="section" id="part-two">
+<h2>Part Two</h2>
+</section>
+<section class="section" id="id1">
+<h2>Code Review 1</h2>
+<ul class="simple">
+<li><p>Previously, students read in seed data to the database.</p></li>
+</ul>
+<p>SQL ALCHEMY SECTION:</p>
+<ul class="simple">
+<li><p>They’ve practiced querying using SQLAlchemy. Questions: what do .all(), .first() and .one() return?</p></li>
+<li><p>As practice, they’re given the question: see if you can figure out how to query users by zipcode and find all users of a particular age. (ex. users that are 17 years old and live in Berwyn, IL).</p></li>
+<li><p>Also have seen order_by and filter_by</p></li>
+<li><p>Using relationships – they’ve now added relationships between movies/ratings and users/ratings. Check in to see if they understand what backref does and where the relationship is actually established in the code. There are two ways of creating relationships; are they familiar with the syntax for both (w/ and w/out backref)?</p></li>
+</ul>
+<p>FLASK SECTION:</p>
+<p>Students are given the code to do the following (so ask them about these pieces to make sure they know what they were given)</p>
+<ul class="simple">
+<li><p>Created a base.html and homepage.html</p></li>
+<li><p>Given a skeleton Flask app.</p></li>
+<li><p>Make a route to display all users and an HTML page to render.</p></li>
+</ul>
+<p>Their tasks:</p>
+<ul class="simple">
+<li><p>Create a route that renders a sign-in form and a route that adds a user to the database. Told to use sessions.</p></li>
+<li><p>Create a route to handle user login/logout. After a user logs in, they should be redirected to the homepage.</p></li>
+</ul>
+</section>
+<section class="section" id="id2">
+<h2>Code Review 2</h2>
+<ul class="simple">
+<li><p>User detail page – students create a page that shows information about a particular user. The user list page should link to the individual user page.</p></li>
+<li><p>Should display age, zipcode and list of movies rated.</p></li>
+<li><p>Login route should now direct user to their individual page.</p></li>
+</ul>
+</section>
+<section class="section" id="code-review-3">
+<h2>Code Review 3</h2>
+<ul class="simple">
+<li><p>Students have created a movie list page and a movie detail page. The movie list page should link to each individual movie page.</p></li>
+<li><p>The movie list page should be ordered by title.</p></li>
+<li><p>Movie detail page should have a form for rating the movie and a route to add the rating to the database.</p></li>
+<li><p>The form should also be able to update the rating if the user has already rated it.</p></li>
+</ul>
+</section>
+<section class="section" id="part-three">
+<h2>Part Three</h2>
+<p>Doesn’t ask students for a code review, but in this piece, students make the app predictive. The instructions lay out specifically what needs to happen, so students can use code given to them, or they can write their own code.</p>
+</section>
+</section>
+
+        </main>
+
+        <footer id="page-footer">
+            <p>&copy; 2022 Devmountain</p>
+        </footer>
+      </div>
+
+      <script src="../_static/main.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+  </body>
+</html>

@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>Judgmental Eye | Devmountain Foundations</title>
+
+      <link
+        href="_static/pygments.css"
+        rel="stylesheet"
+        type="text/css"
+      />
+      <link href="_static/devmountain.css" rel="stylesheet" type="text/css" />
+          <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+          <link rel="stylesheet" type="text/css" href="_static/devmountain.css" />
+          <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+          <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+
+      <script src="_static/pdfobject.min.js"></script>
+      
+  </head>
+  <body>
+      <div id="handouts-container">
+        <header id="page-header">
+            <p id="project-title">Devmountain Foundations</p>
+            <p id="page-title">Judgmental Eye</p>
+              <p id="backlink">
+                <a href="/"> &laquo; Back to Homepage </a>
+              </p>
+        </header>
+
+        <nav id="page-toc"><ul>
+<li><a class="reference internal" href="#">Judgmental Eye</a><ul>
+<li><a class="reference internal" href="#object-relational-mappers">Object Relational Mappers</a></li>
+<li><a class="reference internal" href="#setup">Setup</a></li>
+<li><a class="reference internal" href="#investigating-our-data">Investigating Our Data</a><ul>
+<li><a class="reference internal" href="#u-item">u.item</a></li>
+<li><a class="reference internal" href="#u-user">u.user</a></li>
+<li><a class="reference internal" href="#u-data">u.data</a></li>
+<li><a class="reference internal" href="#what-s-the-model">What’s the Model?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#building-the-database">Building the Database</a><ul>
+<li><a class="reference internal" href="#to-do">To Do</a><ul>
+<li><a class="reference internal" href="#movie-schema">Movie Schema</a></li>
+<li><a class="reference internal" href="#rating-schema">Rating Schema</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#populating-our-tables-with-data">Populating Our Tables with Data</a><ul>
+<li><a class="reference internal" href="#reversing-direction">Reversing Direction</a></li>
+<li><a class="reference internal" href="#reading-data-from-seed-files">Reading Data From Seed Files</a><ul>
+<li><a class="reference internal" href="#loading-dates">Loading Dates</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#autoincrement">Autoincrement</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+
+        <main id="page-content">
+            <section class="section" id="judgmental-eye">
+<h1>Judgmental Eye</h1>
+<img alt="_images/penny-arcade.jpg" class="noprint" src="_images/penny-arcade.jpg" />
+<p>In this lengthy exercise, you’ll tie together a number of important concepts:</p>
+<ul class="simple">
+<li><p>HTML</p></li>
+<li><p>CSS</p></li>
+<li><p>Forms</p></li>
+<li><p>Python processing of data files</p></li>
+<li><p>Flask servers</p></li>
+<li><p>Relational databases</p></li>
+<li><p>ORMs / SQLAlchemy</p></li>
+</ul>
+<p>In addition, we’ll introduce a machine learning algorithm in the final further
+study.</p>
+<p>The overall goal of the exercise is to build a website where users can login
+and add or update ratings of films. If time allows, in the further study we will
+add another feature, which predicts how the users will rate films. This prediction
+is based on analysis of how other users rated that film, depending on how
+similar those other users are to the user. Lastly, we’ll add <strong>The Eye</strong>,
+a system user with terrible taste in movies who will berate users
+for their movie ratings – again, using machine learning to decide how
+<strong>The Eye</strong> would rate things.</p>
+<section class="section" id="object-relational-mappers">
+<h2>Object Relational Mappers</h2>
+<p>If you worked on the <cite>project-tracker</cite> exercise, you saw how we used classes to
+model objects that ultimately were stored in a database. In this project,
+we’ll take this idea further, and introduce a tool called an
+<a class="reference external" href="https://en.wikipedia.org/wiki/Object-relational_mapping" target="_blank">ORM</a>.</p>
+<p>In 2003, <a class="reference external" href="https://en.wikipedia.org/wiki/Martin_Fowler" target="_blank">Martin Fowler</a>
+documented a technique called “Active Record,” a scheme which can be
+diagrammed like so:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 47%" />
+<col style="width: 53%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Database Concept</p></th>
+<th class="head"><p>Object-Oriented Concept</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Table</p></td>
+<td><p>Class</p></td>
+</tr>
+<tr class="row-odd"><td><p>Column</p></td>
+<td><p>Attribute</p></td>
+</tr>
+<tr class="row-even"><td><p>Row</p></td>
+<td><p>Instance</p></td>
+</tr>
+</tbody>
+</table>
+<p>In essence, a table definition is more or less equivalent to a class
+definition. Each column can be thought of as an attribute or property of
+that class. Each row is also analogous to an instantiation of the class. The
+analogy isn’t perfect, but it serves us well enough. The analogy allows us
+to construct software that, through the magic of “introspection”
+(self-examination), can automatically write and execute SQL queries for us
+<em>without</em> the programmer having to stop and think about the SQL required to
+accomplish a task.</p>
+<p>Here’s an example. Given the following SQL:</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">users</span>
+    <span class="p">(</span><span class="n">user_id</span> <span class="nb">SERIAL</span> <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+     <span class="n">email</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span>
+     <span class="n">password</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">64</span><span class="p">));</span>
+</pre></div>
+</div>
+<p>Here is how you might set up the class:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A user of our website; stored in a database.&quot;&quot;&quot;</span>
+
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;users&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a user, given id, email, and password.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span> <span class="o">=</span> <span class="n">user_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">email</span> <span class="o">=</span> <span class="n">email</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">password</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_by_id</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">user_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a user from database by ID and return instance.&quot;&quot;&quot;</span>
+
+        <span class="n">QUERY</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;SELECT user_id, email, password</span>
+<span class="s2">                   FROM users WHERE user_id = :id&quot;&quot;&quot;</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">QUERY</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">user_id</span><span class="p">})</span>
+        <span class="n">user_id</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">password</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">change_password</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change password for the user.&quot;&quot;&quot;</span>
+
+        <span class="n">QUERY</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;UPDATE users SET password = :password &quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;WHERE user_id = :id&quot;</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">QUERY</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;password&#39;</span><span class="p">:</span> <span class="n">password</span><span class="p">,</span>
+                                   <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span><span class="p">})</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>And, with that class, here’s how you would update a user’s password:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">jessica</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">jessica</span><span class="o">.</span><span class="n">change_password</span><span class="p">(</span><span class="s2">&quot;my-new-password&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>There’s nothing wrong here yet, but if we wanted to be able to update the
+user’s email address as well, we start having to write significant amounts
+of repetitive code.</p>
+<p>An ORM provides us with a slightly different workflow. Instead of writing a
+bunch of code to handle SQL, it instead <em>peeks</em> at your class definitions
+(“introspects it”) and uses the information gathered to <strong>generate</strong>
+appropriate SQL. Our <cite>User</cite> class definition changes:</p>
+<p>Given this, our ORM can <em>deduce</em> the original schema we generated earlier.
+The generation of the SQL schema can be left to the software. Furthermore,
+our previous example of changing a user’s password can be done as follows:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">jessica</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">jessica</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="s2">&quot;my-new-password&quot;</span>
+<span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">change_password()</span></code> function no longer exists in that form; its
+existence is obviated as we can access columns directly as if they were
+object attributes, as long as we <em>commit</em> the database after every
+modification to an object. Overall, the amount of overhead code required
+to store data for an app dropped precipitously when ORMs first appeared,
+allowing lone programmers to single-handedly build a full-stack application
+in shorter time periods.</p>
+<p>For this project, we will continue using <a class="reference external" href="http://sqlalchemy.org" target="_blank">SQLAlchemy</a> as our ORM.</p>
+<p>There are other ORMs out there, each implementing the ideas in Fowler’s book slightly differently.</p>
+<div class="admonition note">
+<p class="admonition-title">Other ORMs</p>
+<div class="admonition-body docutils container">
+<p>The other primary competing Python-based ORM is the one that is bundled with
+<a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/db/queries/" target="_blank">Django</a>. The one
+restriction for that one is that it cannot easily be used outside of Django,
+so we won’t consider it here.</p>
+</div>
+</div>
+</section>
+<section class="section" id="setup">
+<h2>Setup</h2>
+<p>There are a number of Python libraries we’ll need for this project.</p>
+<p>We’ll create a virtual environment and install them, using a <cite>requirements.txt</cite>
+file that has the names and exact versions of products we’d like to use:</p>
+<pre class="console literal-block">$ <span class="cmd">virtualenv env</span>
+New python executable in env/bin/python
+Installing setuptools, pip...done.
+$ <span class="cmd">source env/bin/activate</span>
+(env) $ <span class="cmd">pip3 install -r requirements.txt</span>
+Downloading/unpacking Flask (from -r requirements.txt (line 1))
+Downloading Flask-0.10.1.tar.gz (544kB): 544kB downloaded
+<span class="tan">...</span>
+
+Successfully installed Flask Flask-SQLAlchemy Jinja2 <span class="tan">...</span>
+Cleaning up...
+(env) $</pre>
+<p>Awesome.</p>
+</section>
+<section class="section" id="investigating-our-data">
+<h2>Investigating Our Data</h2>
+<p>The dataset we’ll be using is something called the
+<a class="reference external" href="http://grouplens.org/datasets/movielens/" target="_blank">MovieLens 100k</a> dataset. It consists of
+many ratings of movies from users. We’ll mine this data for
+correlations, but first we need to know what it looks like.</p>
+<p>The data has already been unpacked for you in the <cite>seed_data/</cite> directory.
+Take a look:</p>
+<ul class="simple">
+<li><p><cite>u.data</cite></p></li>
+<li><p><cite>u.item</cite></p></li>
+<li><p><cite>u.user</cite></p></li>
+</ul>
+<p>These files have been extracted from the MovieLens 100k; in the original
+documentation that came with the data set was the following information:</p>
+<section class="section" id="u-item">
+<h3>u.item</h3>
+<p>Information about the items (movies); this is a <code class="docutils literal notranslate"><span class="pre">|</span></code>-separated
+list of:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">movie</span> <span class="nb">id</span> <span class="o">|</span> <span class="n">movie</span> <span class="n">title</span> <span class="o">|</span> <span class="n">release</span> <span class="n">date</span> <span class="o">|</span> <span class="n">video</span> <span class="n">release</span> <span class="n">date</span> <span class="o">|</span>
+<span class="n">IMDb</span> <span class="n">URL</span> <span class="o">|</span> <span class="n">unknown</span> <span class="o">|</span> <span class="n">Action</span> <span class="o">|</span> <span class="n">Adventure</span> <span class="o">|</span> <span class="n">Animation</span> <span class="o">|</span>
+<span class="n">Children</span><span class="s1">&#39;s | Comedy | Crime | Documentary | Drama | Fantasy |</span>
+<span class="n">Film</span><span class="o">-</span><span class="n">Noir</span> <span class="o">|</span> <span class="n">Horror</span> <span class="o">|</span> <span class="n">Musical</span> <span class="o">|</span> <span class="n">Mystery</span> <span class="o">|</span> <span class="n">Romance</span> <span class="o">|</span> <span class="n">Sci</span><span class="o">-</span><span class="n">Fi</span> <span class="o">|</span>
+<span class="n">Thriller</span> <span class="o">|</span> <span class="n">War</span> <span class="o">|</span> <span class="n">Western</span> <span class="o">|</span>
+</pre></div>
+</div>
+<p>The last 19 fields are the genres, a 1 indicates the movie
+is of that genre, a 0 indicates it is not; movies can be in
+several genres at once (however, we won’t be using genre information
+at all in this exercise).</p>
+<p>The movie ids are the ones used in the <cite>u.data</cite> data set.</p>
+</section>
+<section class="section" id="u-user">
+<h3>u.user</h3>
+<p>Demographic information about the users; this is a <code class="docutils literal notranslate"><span class="pre">|</span></code>- separated
+list of:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">user</span> <span class="nb">id</span> <span class="o">|</span> <span class="n">age</span> <span class="o">|</span> <span class="n">gender</span> <span class="o">|</span> <span class="n">occupation</span> <span class="o">|</span> <span class="nb">zip</span> <span class="n">code</span>
+</pre></div>
+</div>
+<p>The user ids are the ones used in the <cite>u.data</cite> data set.</p>
+</section>
+<section class="section" id="u-data">
+<h3>u.data</h3>
+<p>The full user data set, 100,000 ratings by 943 users on 1682 items.
+Each user has rated at least 20 movies.  Users and items are
+numbered consecutively from 1.  The data is randomly
+ordered. This is a tab (<code class="docutils literal notranslate"><span class="pre">\t</span></code>) separated list of:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">user_id</span> \<span class="n">t</span> <span class="n">movie_id</span> \<span class="n">t</span> <span class="n">score</span> \<span class="n">t</span> <span class="n">timestamp</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>The score column is an integer between 1 and 5 that will form the basis
+for our rating system throughout this exercise.</p>
+<p>We don’t use them for our data set, but it’s good to understand the
+formatting for the time stamp here–they’re integers, and measured in what
+UNIX calls “epoch time”–seconds since 1/1/1970 UTC.</p>
+</section>
+<section class="section" id="what-s-the-model">
+<h3>What’s the Model?</h3>
+<p>Spend a little bit trying to decipher the files before moving on. It will
+make it easier to remember that in this data set, “items” are movies.</p>
+<p>Stop here and think about how these three files constitute a “model” – that
+is, how they cooperate together to provide a set of information. It might
+help to imagine how, given a movie name, you could find a list of the users
+who rated that movie.</p>
+<div class="admonition hint">
+<p class="admonition-title">Thinking About the Model</p>
+<details class="admonition-body"><summary></summary><div class="admonition-body docutils container">
+<p>If you caught the copious hints, you should be thinking that each of these
+files is a table in a database. Every one of the columns in the file is the
+same as a database column. To reconstruct an entire record (<em>who</em> rated
+<em>what</em> movie) we first go to the <cite>u.data</cite> table to get a <cite>user_id</cite> and a
+<cite>movie_id</cite>. We take those numbers and search their respective files for the
+row id that matches, then glue all three rows together.</p>
+</div>
+</details></div>
+</section>
+</section>
+<section class="section" id="building-the-database">
+<h2>Building the Database</h2>
+<p>Okay, so our data is in files and we need to put them into database tables.
+Great, we’ll start writing a schema. Identify the tables we’ll need to make,
+and sketch out the schema.</p>
+<p>We’re not going to use all the genre data for
+movies, nor are we going to keep track of users’ genders or occupations.</p>
+<p>However, we’ll add authentication data to the user schema, adding both an email
+and password, while making the remaining user data optional. Sketch out a
+rough schema as well as any relationships between the tables (has many,
+belongs to, etc).</p>
+<p>Going by our files, we can come up with the following skeleton:</p>
+<div class="admonition hint">
+<p class="admonition-title">Model</p>
+<details class="admonition-body"><summary></summary><div class="admonition-body docutils container">
+<p><strong>User</strong></p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 86%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>user_id</p></td>
+<td><p>integer, primary key</p></td>
+</tr>
+<tr class="row-odd"><td><p>email</p></td>
+<td><p>optional string</p></td>
+</tr>
+<tr class="row-even"><td><p>password</p></td>
+<td><p>optional string</p></td>
+</tr>
+<tr class="row-odd"><td><p>age</p></td>
+<td><p>optional integer</p></td>
+</tr>
+<tr class="row-even"><td><p>zipcode</p></td>
+<td><p>optional string (technically, these aren’t numeric)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Movie</strong></p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 19%" />
+<col style="width: 81%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>movie_id</p></td>
+<td><p>integer, primary key</p></td>
+</tr>
+<tr class="row-odd"><td><p>title</p></td>
+<td><p>string</p></td>
+</tr>
+<tr class="row-even"><td><p>released_at</p></td>
+<td><p>datetime</p></td>
+</tr>
+<tr class="row-odd"><td><p>imdb_url</p></td>
+<td><p>string</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rating</strong></p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 19%" />
+<col style="width: 81%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>rating_id</p></td>
+<td><p>integer, primary key</p></td>
+</tr>
+<tr class="row-odd"><td><p>movie_id</p></td>
+<td><p>integer</p></td>
+</tr>
+<tr class="row-even"><td><p>user_id</p></td>
+<td><p>integer</p></td>
+</tr>
+<tr class="row-odd"><td><p>score</p></td>
+<td><p>integer</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Relationships</strong></p>
+<ul class="simple">
+<li><p>A user has many ratings</p></li>
+<li><p>A rating belongs to a user</p></li>
+<li><p>A movie has many ratings</p></li>
+<li><p>A rating belongs to a movie</p></li>
+<li><p>A user has many movies through ratings</p></li>
+<li><p>A movie has many users through ratings</p></li>
+</ul>
+</div>
+</details></div>
+<p>We can draw that model as a diagram as such:</p>
+<div class="admonition hint">
+<p class="admonition-title">Model</p>
+<details class="admonition-body"><summary></summary><div class="admonition-body docutils container">
+<div class="resizer" style="width: 40%;">digraph multi {
+u [shape=&quot;record&quot; label=&lt;Users | &lt;B&gt;user_id*&lt;/B&gt;&lt;BR/&gt;email&lt;BR/&gt;password&lt;BR/&gt;age&lt;BR/&gt;zipcode&gt;]
+m [shape=&quot;record&quot; label=&lt;Movies | &lt;b&gt;movie_id*&lt;/b&gt;&lt;br/&gt;title&lt;br/&gt;released_at&lt;BR/&gt;imdb_url&gt;]
+r [shape=&quot;record&quot; label=&lt;Ratings | &lt;b&gt;rating_id*&lt;/b&gt;&lt;br/&gt;&lt;I&gt;movie_id&lt;/I&gt;&lt;br/&gt;&lt;I&gt;user_id&lt;/I&gt;&lt;BR/&gt;score&gt;]
+
+u -&gt; r [arrowhead=&quot;crowsfeet&quot;];
+r -&gt; m [arrowtail=&quot;crowsfeet&quot; dir=&quot;back&quot;];
+}
+</div></div>
+</details></div>
+<p>Now, to write the SQL.</p>
+<p>Well, not so fast. Writing SQL can be tedious
+work. It needs to be done, but it gets tricky remembering the syntax.
+We’ll write <em>code</em> that writes our schemas for us.</p>
+<p>First, look in your project directory. You should see a <cite>model.py</cite> file.
+We’ll begin the alchemy.</p>
+<p>SQLAlchemy is powerful software, and the process it uses to transmute python
+into SQL and back is indeed alchemical. While it would be most excellent
+for you to <em>understand</em> exactly what’s happening, at this stage we just need
+to be able use it reliably. Trust the incantations, then open your <cite>model.py</cite>
+file, and we’ll take a look at the <cite>User</cite> model sample that has been provided.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;User of ratings website.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<p>So far, the only thing out of the ordinary is the inheritance from a class
+named <cite>Model</cite>, which we find on the <cite>db</cite> object. This is how we declare a
+class to be managed by SQLAlchemy.</p>
+<p>This <cite>db.Model</cite> class is required for SQLAlchemy’s magic to work.</p>
+<p>The next few lines are how we define our table and its columns:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;User of ratings website.&quot;&quot;&quot;</span>
+
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;users&quot;</span>
+
+    <span class="n">user_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span>
+                        <span class="n">autoincrement</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We’ll go over it line by line, but try not to find the deeper reasons for
+this syntax: this is a fairly non-standard use of python class attributes.
+It’s allowed by the language definition, but ultimately, these lines we just
+added are SQLAlchemy specific and only make sense in that context. It’s
+good to remember them, but it’s equally good to remember how to look them up.</p>
+<p>The first line:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;users&quot;</span>
+</pre></div>
+</div>
+<p>Simply informs SQLAlchemy that instances of this class will be stored in a
+table named <cite>users</cite>.</p>
+<p>The next:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">user_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">autoincrement</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Tells SQLAlchemy to add a column to the table named <cite>user_id</cite>. It will contain
+an integer, and be the primary key for our table: it will uniquely identify
+every row in the table.</p>
+<p>The next line contains something slightly different:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">email</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This behaves as you’d expect, with the exception of the <code class="docutils literal notranslate"><span class="pre">nullable=True</span></code>
+part. That tells SQLAlchemy (and thus, PostgreSQL) that this column is optional.
+It’s allowed to be <cite>NULL</cite>. Since our MovieLens 100k data set is anonymized,
+we won’t have any email addresses for any of the users we’re given. However,
+to simplify things, we’ll be using the same table to store <em>new</em> users who
+can log in via email, so we need to make the field available for them.</p>
+<p>The remaining columns follow in a similar fashion.</p>
+<p>The word <cite>String</cite> is not a built-in python class (that one is <cite>str</cite>),
+nor is <cite>Integer</cite> (<cite>int</cite>, respectively). These are the SQLAlchemy-managed
+versions of the same data types. You’ll find that they’re imported from
+<cite>db</cite>, at the top of the file. SQLAlchemy has a number of other data types
+as well, including datetimes, booleans, floats, etc., all imported from the
+same place.</p>
+<p>The last thing of note is that there is no <code class="docutils literal notranslate"><span class="pre">__init__()</span></code> method. SQLAlchemy’s
+<cite>Model</cite> superclass provides one for you that uses keyword arguments when
+initializing objects.</p>
+<p>In our terminal window with the activated virtual environment, run your
+<cite>model.py</cite> with the <code class="docutils literal notranslate"><span class="pre">-i</span></code> option:</p>
+<pre class="console literal-block">(env) $ <span class="cmd">python3 -i model.py</span>
+Connected to DB.
+&gt;&gt;&gt;</pre>
+<p>We’ve put some code at the bottom of the <cite>model.py</cite> file already that
+connects to the database. Open a second terminal window and type:</p>
+<pre class="console literal-block">(env) $ <span class="cmd">psql ratings</span></pre>
+<p>to verify that the <cite>ratings</cite> database does not exist. You should see:</p>
+<div class="console highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">psql</span><span class="p">:</span> <span class="n">FATAL</span><span class="p">:</span>  <span class="n">database</span> <span class="s2">&quot;ratings&quot;</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">exist</span>
+</pre></div>
+</div>
+<p>Now in your terminal create your empty database by typing:</p>
+<pre class="console literal-block">(env) $ <span class="cmd">createdb ratings</span></pre>
+<p>Then, back in the same python console execute the method on the database
+connection that creates the tables:</p>
+<pre class="console literal-block">&gt;&gt;&gt; <span class="cmd">db.create_all()</span></pre>
+<p>Back in your second window type:</p>
+<pre class="console literal-block">(env) $ <span class="cmd">psql ratings</span></pre>
+<p>This time you should see something like:</p>
+<div class="console highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">psql</span> <span class="p">(</span><span class="mf">9.4.4</span><span class="p">)</span>
+<span class="n">Type</span> <span class="s2">&quot;help&quot;</span> <span class="k">for</span> <span class="n">help</span><span class="o">.</span>
+
+<span class="n">ratings</span><span class="o">=</span><span class="c1">#</span>
+</pre></div>
+</div>
+<p>Enter <code class="docutils literal notranslate"><span class="pre">\d</span></code> (the “d” stands for “describe”) to see what tables are in the ratings database,
+and then <code class="docutils literal notranslate"><span class="pre">\d</span> <span class="pre">users</span></code> and you should see something like this:</p>
+<pre class="console literal-block">ratings=# \d
+                List of relations
+ Schema |         Name          |   Type   |    Owner
+--------+-----------------------+----------+--------------
+ public | users                 | table    | postgres
+ public | users_user_id_seq     | sequence | postgres
+(2 rows)
+
+ratings=# \d users
+                                Table &quot;public.users&quot;
+  Column  |         Type          |                        Modifiers
+----------+-----------------------+---------------------------------------------
+ user_id  | integer               | not null default nextval ...
+ email    | character varying(64) |
+ password | character varying(64) |
+ age      | integer               |
+ zipcode  | character varying(15) |
+Indexes:
+    &quot;users_pkey&quot; PRIMARY KEY, btree (user_id)</pre>
+<p>Mind = <strong>blown</strong></p>
+<img alt="_images/mind-blown.gif" class="noprint" src="_images/mind-blown.gif" />
+<section class="section" id="to-do">
+<h3>To Do</h3>
+<p>Quit both <cite>psql</cite> and <cite>python</cite>.</p>
+<p>Drop your <cite>ratings</cite> database (<code class="docutils literal notranslate"><span class="pre">dropdb</span> <span class="pre">ratings</span></code>).</p>
+<p>You will refer to the schema for movies and ratings (below) to create two
+additional classes — <cite>Movie</cite> and <cite>Rating</cite>. They will be used to hold the
+information that we want to keep from the data files.</p>
+<p>Before you get started, notice that the schema for movies requires a column
+called <cite>released_at</cite> with the type, <cite>datetime</cite>. <strong>Be sure to use the SQLAlchemy
+type,</strong> <cite>db.DateTime</cite> <strong>for this column.</strong> It will become important later.</p>
+<p>If necessary, you can refer to the <a class="reference external" href="http://docs.sqlalchemy.org/en/latest/orm/tutorial.html" target="_blank">SQLAlchemy tutorial</a> or your lecture notes.</p>
+<section class="section" id="movie-schema">
+<h4>Movie Schema</h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 35%" />
+<col style="width: 65%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>movie_id</p></td>
+<td><p>integer, primary key</p></td>
+</tr>
+<tr class="row-odd"><td><p>title</p></td>
+<td><p>string</p></td>
+</tr>
+<tr class="row-even"><td><p>released_at</p></td>
+<td><p>datetime</p></td>
+</tr>
+<tr class="row-odd"><td><p>imdb_url</p></td>
+<td><p>string</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section class="section" id="rating-schema">
+<h4>Rating Schema</h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 35%" />
+<col style="width: 65%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>rating_id</p></td>
+<td><p>integer, primary key</p></td>
+</tr>
+<tr class="row-odd"><td><p>movie_id</p></td>
+<td><p>integer</p></td>
+</tr>
+<tr class="row-even"><td><p>user_id</p></td>
+<td><p>integer</p></td>
+</tr>
+<tr class="row-odd"><td><p>score</p></td>
+<td><p>integer</p></td>
+</tr>
+</tbody>
+</table>
+<p>When you’re done, repeat the process of running <code class="docutils literal notranslate"><span class="pre">db.create_all()</span></code> to create
+your tables. Reopen your PostgreSQL database in your second window.</p>
+</section>
+</section>
+</section>
+<section class="section" id="populating-our-tables-with-data">
+<h2>Populating Our Tables with Data</h2>
+<p>In your PostgreSQL window, insert a new row into your users table:</p>
+<pre class="console literal-block">ratings=# <span class="cmd">INSERT INTO users (email, password, age, zipcode)</span>
+ratings=# <span class="cmd">VALUES ('jessica&#64;gmail.com', 'mypass', 29, '94114');</span></pre>
+<p>Now, we will transmute SQL into Python. First, query to see your shiny new
+record in PostgreSQL:</p>
+<pre class="console literal-block">ratings=# <span class="cmd">SELECT * FROM users;</span>
+user_id   | email                 | password |   age    |  zipcode
+----------+-----------------------+----------+----------+----------
+1         |  <a class="reference external" href="mailto:jessica&#37;&#52;&#48;gmail&#46;com">jessica<span>&#64;</span>gmail<span>&#46;</span>com</a>    |  mypass  |    29    |   94114</pre>
+<p>Switch to another terminal window and do the following:</p>
+<pre class="console literal-block">$ <span class="cmd">python3 -i model.py</span>
+Connected to DB.
+&gt;&gt;&gt; <span class="cmd">jessica = User.query.get(1)</span>
+&gt;&gt;&gt; <span class="cmd">print(jessica.email)</span>
+<a class="reference external" href="mailto:jessica&#37;&#52;&#48;gmail&#46;com">jessica<span>&#64;</span>gmail<span>&#46;</span>com</a></pre>
+<p>The <code class="docutils literal notranslate"><span class="pre">1</span></code> in the <code class="docutils literal notranslate"><span class="pre">get()</span></code> method is the id of the User we want to get from our
+table. If your database has a different id for the user you want to find, use
+that instead.</p>
+<p>Before we go further, let’s see what happens if we print out the user
+directly:</p>
+<pre class="console literal-block">&gt;&gt;&gt; <span class="cmd">print(jessica)</span>
+&lt;User 1&gt;</pre>
+<p>When you print out a SQLAlchemy object in Python (either in a script or in the
+Python console), it normally prints something like <code class="docutils literal notranslate"><span class="pre">&lt;User</span> <span class="pre">1&gt;</span></code>,
+which just tells us the primary key of that object. That’s not very
+helpful; it would be more helpful to get some useful information for debugging
+what user we’re dealing with.</p>
+<p>Therefore, we’ll add a magic method to <cite>User</cite>, <code class="docutils literal notranslate"><span class="pre">__repr__()</span></code>. If you define
+this method on a class, when Python tries to “represent” an instance of this
+class, it will use this instead.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Provide helpful representation when printed.&quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;User user_id=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">user_id</span><span class="si">}</span><span class="s2"> email=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">email</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
+
+</pre></div>
+</div>
+<p>To get this new Python code, you’ll need to quit the Python console and
+re-start:</p>
+<pre class="console literal-block">$ <span class="cmd">python3 -i model.py</span>
+Connected to DB.
+&gt;&gt;&gt; <span class="cmd">jessica = User.query.get(1)</span>
+&gt;&gt;&gt; <span class="cmd">print(jessica)</span>
+&lt;User user_id=1 <a class="reference external" href="mailto:email=jessica&#37;&#52;&#48;gmail&#46;com">email=jessica<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</pre>
+<p>That’s helpful.</p>
+<p>Let’s update her password to be something more secure:</p>
+<pre class="console literal-block">&gt;&gt;&gt; <span class="cmd">jessica.password = &quot;qfujf3&quot;</span></pre>
+<p>Now, let’s query the database to see if that worked:</p>
+<pre class="console literal-block">ratings=# <span class="cmd">SELECT * FROM users;</span>
+user_id   |  email                | password |   age    |  zipcode
+----------+-----------------------+----------+----------+----------
+1         |  <a class="reference external" href="mailto:jessica&#37;&#52;&#48;gmail&#46;com">jessica<span>&#64;</span>gmail<span>&#46;</span>com</a>    | mypass   |   29     |  94114</pre>
+<p>The new password isn’t there! What gives? Well, like when we did raw SQL
+(and not dissimilar to Git), we need to commit data after we’ve modified it.</p>
+<p>In Python:</p>
+<pre class="console literal-block">&gt;&gt;&gt; <span class="cmd">db.session.commit()</span></pre>
+<p>And query again:</p>
+<pre class="console literal-block">ratings=# <span class="cmd">SELECT * FROM users;</span>
+user_id   |  email                | password |  age     |  zipcode
+----------+-----------------------+----------+----------+----------
+1         |  <a class="reference external" href="mailto:jessica&#37;&#52;&#48;gmail&#46;com">jessica<span>&#64;</span>gmail<span>&#46;</span>com</a>    |  qfujf3  |  29      |  94114</pre>
+<p>SQLAlchemy took our python and wrote the appropriate SQL update query for
+us behind the scenes. This is a powerful idea, because now we can write
+programs, only worrying about the classes and data we’re interested in,
+and not how to write the SQL we need to save it somewhere.</p>
+<p><strong>Once more, for effect:</strong></p>
+<img alt="_images/mind-blown.gif" class="noprint" src="_images/mind-blown.gif" />
+<section class="section" id="reversing-direction">
+<h3>Reversing Direction</h3>
+<p>We inserted data in SQL, then got it back out on the python end, where we
+could update it. Now, let’s do the reverse, where we insert data in from
+python. Let’s make a record for Jada.</p>
+<pre class="console literal-block">&gt;&gt;&gt; <span class="cmd">jada = User(email=&quot;jada&#64;gmail.com&quot;, password=&quot;abc123&quot;, age=25,</span>
+...             <span class="cmd">zipcode=&quot;94103&quot;)</span></pre>
+<p>If we query the database, we get nothing:</p>
+<pre class="console literal-block">ratings=# <span class="cmd">SELECT * FROM users;</span>
+user_id   | email                 | password | age      | zipcode
+----------+-----------------------+----------+----------+----------
+1         | <a class="reference external" href="mailto:jessica&#37;&#52;&#48;gmail&#46;com">jessica<span>&#64;</span>gmail<span>&#46;</span>com</a>     | qfujf3   | 29       | 94114</pre>
+<p>Right, we have to commit first. Actually, we have to do more than commit.
+Right now, we have a <cite>User</cite> object that we created in Python, but that isn’t
+reflected in the database immediately. There are times when we want to do
+exactly this, so SQLAlchemy forces us to be <em>explicit</em> when we want to insert
+something into the database as well. We do this by <em>adding</em> an object to
+our session. Here, the Git parallel is particularly strong.</p>
+<pre class="console literal-block">&gt;&gt;&gt; <span class="cmd">db.session.add(jada)</span>
+&gt;&gt;&gt; <span class="cmd">db.session.commit()</span></pre>
+<p>Now, in PostgreSQL, one more time:</p>
+<pre class="console literal-block">ratings=# <span class="cmd">SELECT * FROM users;</span>
+user_id   | email                 | password | age      | zipcode
+----------+-----------------------+----------+----------+----------
+1         | <a class="reference external" href="mailto:jessica&#37;&#52;&#48;gmail&#46;com">jessica<span>&#64;</span>gmail<span>&#46;</span>com</a>     | qfujf3   | 29       | 94114
+2         | <a class="reference external" href="mailto:jada&#37;&#52;&#48;gmail&#46;com">jada<span>&#64;</span>gmail<span>&#46;</span>com</a>        | abc123   | 25       | 94103</pre>
+<p>Now that our object has been “added” to the database, it is being tracked,
+and if we need to update it, we only need to commit after modifying it:</p>
+<pre class="console literal-block">&gt;&gt;&gt; <span class="cmd">jada.password = &quot;bunnies&quot;</span>
+&gt;&gt;&gt; <span class="cmd">db.session.commit()</span></pre>
+<p>and to confirm:</p>
+<pre class="console literal-block">ratings=# <span class="cmd">SELECT * FROM users WHERE user_id = 2;</span>
+user_id   | email                 | password | age      | zipcode
+----------+-----------------------+----------+----------+----------
+2         | <a class="reference external" href="mailto:jada&#37;&#52;&#48;gmail&#46;com">jada<span>&#64;</span>gmail<span>&#46;</span>com</a>        | bunnies  | 25       | 94103</pre>
+<p>Let’s do one more thing. So far, we’ve relied on PostgreSQL to assign unique ids
+to our users. We can specify an id when creating a user.</p>
+<pre class="console literal-block">&gt;&gt;&gt; <span class="cmd">juanita = User(user_id=5, email=&quot;juanita&#64;gmail.com&quot;,</span>
+...     <span class="cmd">password=&quot;abc123&quot;, age=42, zipcode=&quot;94103&quot;)</span>
+&gt;&gt;&gt; <span class="cmd">db.session.add(juanita)</span>
+&gt;&gt;&gt; <span class="cmd">db.session.commit()</span></pre>
+<p>If we query the database, we should see this:</p>
+<pre class="console literal-block">ratings=# <span class="cmd">SELECT * FROM users WHERE email='juanita&#64;gmail.com';</span>
+user_id   | email                 | password | age      | zipcode
+----------+-----------------------+----------+----------+----------
+5         | <a class="reference external" href="mailto:juanita&#37;&#52;&#48;gmail&#46;com">juanita<span>&#64;</span>gmail<span>&#46;</span>com</a>     | abc123   | 42       | 94103</pre>
+<p>Experiment with adding, committing, and querying to make sure you understand
+how data goes into PostgreSQL through Python, and how to get it back out. Add
+new records on both the PostgreSQL and Python sides, and use <code class="docutils literal notranslate"><span class="pre">.get()</span></code> to get
+them back out. Change some fields, then commit them back and see how the
+columns get updated. Do this for all three tables, then get ready to wipe
+them out.</p>
+<p>First, drop your <cite>ratings</cite> database using the <code class="docutils literal notranslate"><span class="pre">dropdb</span></code> command. Then,
+recreate your database using the <code class="docutils literal notranslate"><span class="pre">createdb</span></code> command. Reconnect to your
+<cite>model.py</cite> file and run <code class="docutils literal notranslate"><span class="pre">db.create_all()</span></code> in order to recreate your <cite>ratings</cite>
+database.</p>
+<pre class="console literal-block">(env) $ <span class="cmd">dropdb ratings</span>
+(env) $ <span class="cmd">createdb ratings</span>
+(env) $ <span class="cmd">python3 -i model.py</span>
+Connected to DB.
+&gt;&gt;&gt; <span class="cmd">db.create_all()</span></pre>
+</section>
+<section class="section" id="reading-data-from-seed-files">
+<h3>Reading Data From Seed Files</h3>
+<p>Now that we know how to insert single rows into the database, we have to
+<em>bulk insert</em> a bunch of our movie data. You’ll find a file, <cite>seed.py</cite>,
+which contains a rough outline of what needs to happen. You’ll need to open
+up the seed files corresponding to each table, read each row in,
+parse it, then insert it into the database using our SQLAlchemy object
+interface.</p>
+<p>The general steps are:</p>
+<ol class="arabic simple">
+<li><p>Open and read a file</p></li>
+<li><p>Parse a line</p></li>
+<li><p>Create an object</p></li>
+<li><p>Add the object to the <cite>db.session</cite></p></li>
+<li><p>Repeat until all objects are added</p></li>
+<li><p>Commit</p></li>
+</ol>
+<p>We’ve supplied the first, <code class="docutils literal notranslate"><span class="pre">load_users</span></code>, to give you a sense of what to do for
+the others. Read it carefully. Each of the files is formatted slightly
+differently, so you’ll have to modify the second two functions to account for
+those changes.</p>
+<div class="admonition note">
+<p class="admonition-title">Why hardcode primary key for users?</p>
+<div class="admonition-body docutils container">
+<p>In most cases, you shouldn’t have to hardcode the primary key for database
+records that you create. In this case, we aren’t just loading data for users.
+We are also loading users’ movie ratings. We have to hardcode the primary key
+for users because they are used as foreign keys in the <cite>ratings</cite> table.</p>
+</div>
+</div>
+<p>Before you get started, we need to talk about how to work with the <cite>db.DateTime</cite>
+column-type so keep reading.</p>
+<section class="section" id="loading-dates">
+<h4>Loading Dates</h4>
+<p>The movies include the year of release at the end of the title (<code class="docutils literal notranslate"><span class="pre">&quot;Balloonicorn's</span>
+<span class="pre">Big</span> <span class="pre">Adventure</span> <span class="pre">(2010)&quot;</span></code>). We don’t want to include that parenthetical date in
+the database since we are already storing release dates in a separate column
+(called <cite>released_at</cite>). <strong>You need to figure out a way to remove the release
+year from movie titles before they go into the database.</strong></p>
+<p>Speaking of the <cite>released_at</cite> column, when you read data in from a file, you’ll
+get the release date of each movie as a string (<code class="docutils literal notranslate"><span class="pre">&quot;31-Oct-2015&quot;</span></code>). Recall that
+the data type for <cite>released_at</cite> is <cite>db.DateTime</cite> and <em>not</em> <cite>db.String</cite>. This
+means we need to convert the strings to actual <cite>datetime</cite> objects. We can do
+this with Python’s built-in <cite>datetime</cite> module.</p>
+<p>The <cite>datetime</cite> module provides various classes for working with dates and times.
+One of those classes is the <cite>datetime</cite> class. The best way to learn about this
+class is to experiment with it. In your terminal, start the Python REPL and
+import the <cite>datetime</cite> class from the <cite>datetime</cite> module:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+</pre></div>
+</div>
+<p>Now we can experiment with the <cite>datetime</cite> class. The <cite>datetime</cite> class has
+a class method called <cite>datetime.strptime</cite>. It can turn a string into a
+<cite>datetime</cite> object. This is the method we’ll use to convert dates from our data
+file to <cite>datetime</cite> objects. To demonstrate how it works, <strong>type the following
+lines of code into the Python REPL</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">date_str</span> <span class="o">=</span> <span class="s2">&quot;31-Oct-2015&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">format</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">-%b-%Y&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">date_str</span><span class="p">,</span> <span class="nb">format</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">date</span>
+<span class="go">datetime.datetime(2015, 10, 31, 0, 0)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">date</span><span class="o">.</span><span class="n">year</span>
+<span class="go">2015</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">date</span><span class="o">.</span><span class="n">month</span>
+<span class="go">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">date</span><span class="o">.</span><span class="n">day</span>
+<span class="go">31</span>
+</pre></div>
+</div>
+<p>Here’s how <cite>datetime.strptime</cite> works:</p>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">datetime.strptime(date_string,</span> <span class="pre">format)</span></code></dt><dd><p>Return a <cite>datetime</cite> corresponding to <cite>date_string</cite>, parsed according to
+<cite>format</cite>.</p>
+<p>In other words, it takes in two arguments:</p>
+<ul class="simple">
+<li><p><cite>date_string</cite> — a string with a date in it (the data that you want to turn
+into a <cite>datetime</cite> object)</p></li>
+<li><p><cite>format</cite> — a string that tells Python how the date is formatted. It uses
+time format codes adopted from the 1989 C standard.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Time format codes start with a percent sign followed by another character. In
+the first example, our format string was <code class="docutils literal notranslate"><span class="pre">&quot;%d-%b-%Y&quot;</span></code>. Here’s a breakdown of
+each format code used in the example:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 8%" />
+<col style="width: 61%" />
+<col style="width: 31%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Code</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Example</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">%d</span></code></p></td>
+<td><p>The day of the month as a zero-padded number</p></td>
+<td><p>01, 02, …, 30, 31</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">%b</span></code></p></td>
+<td><p>The month’s abbreviated name</p></td>
+<td><p>Jan, Feb …, Nov, Dec</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">%Y</span></code></p></td>
+<td><p>The four-digit year</p></td>
+<td><p>1999, 2000, …, 2019</p></td>
+</tr>
+</tbody>
+</table>
+<p>You can view all the different format codes in this <a class="reference external" href="http://strftime.org/" target="_blank">handy-dandy cheatsheet</a>.</p>
+<p>Let’s see another example of <cite>datetime.strptime</cite> so you can get a feel for how
+the format codes work. Type the following in the Python REPL:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">date_str2</span> <span class="o">=</span> <span class="s2">&quot;Python 3.8 release: October 14th, 2019&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">format2</span> <span class="o">=</span> <span class="s2">&quot;Python 3.8 release: %B </span><span class="si">%d</span><span class="s2">th, %Y&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">date2</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">date_str2</span><span class="p">,</span> <span class="n">format2</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">date2</span>
+<span class="go">datetime.datetime(2019, 10, 14, 0, 0)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">date2</span><span class="o">.</span><span class="n">year</span>
+<span class="go">2019</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">date2</span><span class="o">.</span><span class="n">month</span>
+<span class="go">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">date2</span><span class="o">.</span><span class="n">day</span>
+<span class="go">14</span>
+</pre></div>
+</div>
+<p>Refer to the <a class="reference external" href="http://strftime.org/" target="_blank">time-format cheatsheet</a> — which format
+codes are we using and what do they mean? As a challenge to yourself, write
+dates and times in different ways and convert them to <cite>datetime</cite> objects.</p>
+<p>Now you’re ready to write your <code class="docutils literal notranslate"><span class="pre">load</span></code> functions!</p>
+</section>
+</section>
+</section>
+<section class="section" id="autoincrement">
+<h2>Autoincrement</h2>
+<p>Much like the Take-A-Number dispenser at the deli, Postgres uses sequences to
+set the values for autoincrement columns.  By default, the sequence starts at 1.
+Since we loaded in the user_ids from the data file when we seeded our database,
+we haven’t used the sequence yet.  When we create a new user later on, Postgres
+will attempt to assign it id 1 (the first number in the sequence), and this
+will generate an error, because there already is a user with user_id 1.</p>
+<p>To prevent this error, we’ve included a function <cite>set_val_user_id</cite> in <cite>seed.py</cite>.
+This function queries users to find the maximum id, and then sets our sequence
+next value to be one more than that max.</p>
+<p>If you want to better understand how this function works, enter psql from the
+terminal. Just as <code class="docutils literal notranslate"><span class="pre">\dt</span></code> shows a list of the tables, <code class="docutils literal notranslate"><span class="pre">\d</span></code> lists all tables, views, and sequences.  After you seed the database, you can see that you have:</p>
+<pre class="console literal-block">ratings=# d
+                   List of relations
+ Schema |         Name          |   Type   |   Owner
+--------+-----------------------+----------+-----------
+ public | movies                | table    | user
+ public | movies_movie_id_seq   | sequence | user
+ public | ratings               | table    | user
+ public | ratings_rating_id_seq | sequence | user
+ public | users                 | table    | user
+ public | users_user_id_seq     | sequence | user</pre>
+<p>We are adjusting the users_user_id_seq, using the Postgres function <cite>setval</cite>.
+You can read more about Postgres functions on sequences
+<a class="reference external" href="http://www.postgresql.org/docs/8.2/static/functions-sequence.html" target="_blank">here</a>.</p>
+<p>Once you’re done, move on to <a class="reference external" href="https://ed.devmountain.com/materials/exercises/ratings/index-2.html">Part 2</a> or <a class="reference external" href="solution/index.html">review the solution
+code</a>.</p>
+</section>
+</section>
+
+        </main>
+
+        <footer id="page-footer">
+            <p>&copy; 2022 Devmountain</p>
+        </footer>
+      </div>
+
+      <script src="_static/main.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+  </body>
+</html>

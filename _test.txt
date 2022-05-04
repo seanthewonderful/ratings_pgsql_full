@@ -1,0 +1,41 @@
+Test homepage:
+
+    >>> from server import app
+    >>> client = app.test_client()
+
+    >>> r = client.get("/")
+    >>> assert "Placeholder for the homepage." in r.data.decode('utf-8')
+
+    >>> from model import db
+    >>> from seed import load_users
+    >>> from model import User
+    >>> import os
+
+Set up test database
+    >>> app.config['TESTING'] = True
+    >>> os.system("dropdb testdb --if-exists")
+    0
+    >>> os.system("createdb testdb")
+    0
+
+    >>> app.config['SQLALCHEMY_ECHO'] = False
+    >>> app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///testdb'
+    >>> app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    >>> db.app = app
+    >>> db.init_app(app)
+
+Create tables and check that user table data loads.
+    >>> db.create_all()
+    >>> load_users()
+    Users
+
+    >>> print(User.query.get(47).zipcode)
+    07102
+
+Clean up 
+    >>> db.session.close()
+    >>> db.session.remove()
+    >>> db.drop_all()
+    >>> db.engine.dispose()
+
+

@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>Exercise: Judgmental Eye Part 2 | Devmountain Foundations</title>
+
+      <link
+        href="_static/pygments.css"
+        rel="stylesheet"
+        type="text/css"
+      />
+      <link href="_static/devmountain.css" rel="stylesheet" type="text/css" />
+          <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+          <link rel="stylesheet" type="text/css" href="_static/devmountain.css" />
+          <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+          <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+
+      <script src="_static/pdfobject.min.js"></script>
+      
+  </head>
+  <body>
+      <div id="handouts-container">
+        <header id="page-header">
+            <p id="project-title">Devmountain Foundations</p>
+            <p id="page-title">Exercise: Judgmental Eye Part 2</p>
+              <p id="backlink">
+                <a href="/"> &laquo; Back to Homepage </a>
+              </p>
+        </header>
+
+        <nav id="page-toc"><ul>
+<li><a class="reference internal" href="#">Exercise: Judgmental Eye Part 2</a><ul>
+<li><a class="reference internal" href="#querying">Querying</a></li>
+<li><a class="reference internal" href="#using-relationships">Using Relationships</a></li>
+<li><a class="reference internal" href="#using-flask">Using Flask</a><ul>
+<li><a class="reference internal" href="#base-template">Base Template</a></li>
+<li><a class="reference internal" href="#homepage">Homepage</a></li>
+<li><a class="reference internal" href="#user-list">User List</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#your-tasks">Your Tasks</a><ul>
+<li><a class="reference internal" href="#adding-new-users">Adding New Users</a></li>
+<li><a class="reference internal" href="#handling-login-and-logout">Handling Login and Logout</a></li>
+<li><a class="reference internal" href="#user-details">User Details</a></li>
+<li><a class="reference internal" href="#movie-list">Movie List</a></li>
+<li><a class="reference internal" href="#movie-details">Movie Details</a></li>
+<li><a class="reference internal" href="#thoughts">Thoughts</a></li>
+<li><a class="reference internal" href="#the-end">The End</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+
+        <main id="page-content">
+            <section class="section" id="exercise-judgmental-eye-part-2">
+<h1>Exercise: Judgmental Eye Part 2</h1>
+<p>If you didn’t finish step 1, or you’d like to get a sense of how
+others might build it, you should check out the
+<a class="reference external" href="solution/index.html">Step 1 Solution</a>.</p>
+<p>Already, SQLAlchemy has saved us a metric ton of time setting up the
+connection between our Python code and our database, but we haven’t yet seen
+the most important part. In this section, we’re going to look at how
+SQLAlchemy makes dealing with <em>relations</em> in our relational database much
+easier.</p>
+<section class="section" id="querying">
+<h2>Querying</h2>
+<p>One of the things which we haven’t explored is SQLAlchemy’s querying
+capabilities. The basic query is the <code class="docutils literal notranslate"><span class="pre">.get()</span></code>, which works by querying on
+primary keys.</p>
+<p>You can test these out by running the Python interpreter with the <cite>model.py</cite>
+module loaded,</p>
+<pre class="console literal-block">(env)$ <span class="cmd">python3 -i model.py</span></pre>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It translates to the following SQL query:</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">users</span> <span class="k">WHERE</span> <span class="n">user_id</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>We can query on specific fields:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Returns the first movie named Cape Fear</span>
+<span class="n">Movie</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Cape Fear&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>We can add multiple restrictions:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Returns one movie named Cape Fear, released in 1962</span>
+<span class="n">Movie</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Cape Fear&quot;</span><span class="p">,</span> <span class="n">release_year</span><span class="o">=</span><span class="mi">1962</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(Before you complain, I’m fully aware we haven’t made <cite>release_year</cite> a
+property of our Movie object.)</p>
+<p>We can get multiple results back:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Returns all movies named Cape Fear</span>
+<span class="n">Movie</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Cape Fear&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(Yes, there are two movies called <em>Cape Fear</em> – the 1962 original and the
+overblown remake in 1991.)</p>
+<p>The rules for doing these queries may seem complicated, but in reality,
+they’re quite simple and consistent. We’ll break up a query to see how it
+works:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">query</span> <span class="o">=</span> <span class="n">Movie</span><span class="o">.</span><span class="n">query</span>
+<span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Cape Fear&quot;</span><span class="p">)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In the first line, we create a query that works against the <cite>movies</cite> table.
+In essence, it sets up the <code class="docutils literal notranslate"><span class="pre">SELECT</span> <span class="pre">*</span> <span class="pre">FROM</span> <span class="pre">movies</span></code> part of a query.</p>
+<p>The second line adds a filter, which is directly analogous to the <cite>WHERE</cite>
+clause. Here, it translates to the <code class="docutils literal notranslate"><span class="pre">WHERE</span> <span class="pre">title=&quot;Cape</span> <span class="pre">Fear&quot;</span></code> part of the query
+line.</p>
+<p>Finally, the last line tells the query to execute and return the instance
+objects that match the query. The <code class="docutils literal notranslate"><span class="pre">.all()</span></code> part tells SQLAlchemy to return
+a list of all matching instances. There are two other methods that could be
+called instead, <code class="docutils literal notranslate"><span class="pre">.first()</span></code> and <code class="docutils literal notranslate"><span class="pre">.one()</span></code>.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">.all()</span></code></dt><dd><p>returns a <em>list</em> of all matching instances.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">.first()</span></code></dt><dd><p>returns the first matching instance or <cite>None</cite> if there aren’t any.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">.one()</span></code></dt><dd><p>returns the <cite>only</cite> matching instance if exactly one row
+matches. Throws an error if there are zero or more than
+one match.</p>
+</dd>
+</dl>
+<p>Practice querying.</p>
+<p>In particular, see if you can figure out how to query users by zipcode and
+find all users of a particular age. (ex. users that are 17 years old <em>and</em>
+live in Berwyn, IL). Use the
+<a class="reference external" href="http://docs.sqlalchemy.org/en/latest/orm/tutorial.html#querying" target="_blank">SQLAlchemy tutorial</a>
+on querying as a start.</p>
+<div class="admonition note">
+<p class="admonition-title">Ordering query results</p>
+<div class="admonition-body docutils container">
+<p>You can also order your results using <code class="docutils literal notranslate"><span class="pre">.order_by()</span></code> after any
+<code class="docutils literal notranslate"><span class="pre">filter_by()</span></code> clauses.</p>
+<p>For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Movie</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Cape Fear&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;movie_id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+<span class="n">Movie</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">filter_by vs filter</p>
+<div class="admonition-body docutils container">
+<p>There are two methods that are similarly called but different in execution.</p>
+<p>We’ve demonstrated <code class="docutils literal notranslate"><span class="pre">.filter_by()</span></code>, which is the more straightforward
+way to filter a query. You can finish all of Judgmental Eye using just
+this.</p>
+<p>There’s another method, <code class="docutils literal notranslate"><span class="pre">.filter()</span></code>, which is more complex and more
+flexible. It’s useful when you want to use operations in your queries (like
+greater than, less than, not equal, etc) or are querying
+from multiple tables at once. You don’t need to use <code class="docutils literal notranslate"><span class="pre">.filter()</span></code> for the
+Judgmental Eye, but it’s a good thing to know exists for future reference
+with SQLAlchemy.</p>
+</div>
+</div>
+</section>
+<section class="section" id="using-relationships">
+<h2>Using Relationships</h2>
+<p>In the first section of this exercise, we came up with the following
+relations in our schema:</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">A user has many ratings</div>
+<div class="line">A rating belongs to a user</div>
+<div class="line">A movie has many ratings</div>
+<div class="line">A rating belongs to a movie</div>
+<div class="line">A user has many movies through ratings</div>
+<div class="line">A movie has many users through ratings</div>
+</div>
+</div></blockquote>
+<p>Given our newfound querying abilities, we can find the titles for all the
+movies user 35 has rated. Try this now in your console after running:</p>
+<pre class="console literal-block">(env)$ <span class="cmd">python3 -i model.py</span></pre>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">35</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ratings</span> <span class="o">=</span> <span class="n">Rating</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">user_id</span><span class="o">=</span><span class="n">user</span><span class="o">.</span><span class="n">user_id</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">movies</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">ratings</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">movie</span> <span class="o">=</span> <span class="n">Movie</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">movie_id</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">movies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">movie</span><span class="p">)</span>
+<span class="gp">...</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">movies</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="go">Jungle2Jungle</span>
+<span class="go">Fire Down Below</span>
+<span class="go">Kolya</span>
+<span class="go">George of the Jungle</span>
+<span class="go">Excess Baggage</span>
+<span class="go">Kull the Conqueror</span>
+<span class="go">Murder at 1600</span>
+<span class="go">Kiss the Girls</span>
+<span class="go">Air Bud</span>
+<span class="go">Money Talks</span>
+<span class="go">Volcano</span>
+<span class="go">Spawn</span>
+<span class="go">Conspiracy Theory</span>
+<span class="go">Contact</span>
+<span class="go">Peacemaker, The</span>
+<span class="go">Thousand Acres, A</span>
+<span class="go">Money Talks</span>
+<span class="go">Game, The</span>
+<span class="go">Saint, The</span>
+<span class="go">Cop Land</span>
+<span class="go">G.I. Jane</span>
+<span class="go">Air Force One</span>
+<span class="go">Mimic</span>
+<span class="go">Kull the Conqueror</span>
+<span class="go">Mother</span>
+</pre></div>
+</div>
+<p>Not bad, but there’s still a bit of code. Given a record in the user
+table, we have to manually query for the appropriate rows in the other two
+tables. On top of that, it requires one query to get the user, one query to get
+all of that user’s ratings, and then <em>n</em> queries to get all of the movies. If
+you’ll recall, we can use SQL joins to get all that data at once, but it’s
+not obvious how joins fit into SQLAlchemy’s mechanisms.</p>
+<p>SQLAlchemy has a mechanism called a “relationship” that uses SQL joins, but
+hides the nitty-gritty from you. Let’s update our <cite>model.py</cite> file.</p>
+<p>We’ll implement the relationship between users and ratings first: a user has
+many ratings. Find your <cite>Rating</cite> model. If you used the same field names as
+were suggested in the first part of this exercise, your <cite>model.py</cite> file
+should look like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Rating</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rating of a movie by a user.&quot;&quot;&quot;</span>
+
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;ratings&quot;</span>
+
+    <span class="n">rating_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span>
+                          <span class="n">autoincrement</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                          <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">movie_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">user_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Provide helpful representation when printed.&quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;Rating rating_id=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rating_id</span><span class="si">}</span><span class="s2"> </span>
+<span class="s2">                   movie_id=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">movie_id</span><span class="si">}</span><span class="s2"> </span>
+<span class="s2">                   user_id=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">user_id</span><span class="si">}</span><span class="s2"> </span>
+<span class="s2">                   score=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score</span><span class="si">}</span><span class="s2">&gt;&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<p>Let’s update the class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Rating</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rating of a movie by a user.&quot;&quot;&quot;</span>
+
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;ratings&quot;</span>
+
+    <span class="n">rating_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span>
+                          <span class="n">autoincrement</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                          <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="hll">    <span class="n">movie_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span>
+</span><span class="hll">                         <span class="n">db</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;movies.movie_id&#39;</span><span class="p">))</span>
+</span><span class="hll">    <span class="n">user_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;users.user_id&#39;</span><span class="p">))</span>
+</span>    <span class="n">score</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">)</span>
+<span class="hll">
+</span><span class="hll">    <span class="c1"># Define relationship to user</span>
+</span><span class="hll">    <span class="n">user</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span><span class="s2">&quot;User&quot;</span><span class="p">,</span>
+</span><span class="hll">                           <span class="n">backref</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">backref</span><span class="p">(</span><span class="s2">&quot;ratings&quot;</span><span class="p">,</span>
+</span><span class="hll">                                              <span class="n">order_by</span><span class="o">=</span><span class="n">rating_id</span><span class="p">))</span>
+</span>
+<span class="hll">    <span class="c1"># Define relationship to movie</span>
+</span><span class="hll">    <span class="n">movie</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span><span class="s2">&quot;Movie&quot;</span><span class="p">,</span>
+</span><span class="hll">                            <span class="n">backref</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">backref</span><span class="p">(</span><span class="s2">&quot;ratings&quot;</span><span class="p">,</span>
+</span><span class="hll">                                               <span class="n">order_by</span><span class="o">=</span><span class="n">rating_id</span><span class="p">))</span>
+</span>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Provide helpful representation when printed.&quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;Rating rating_id=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rating_id</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">                   movie_id=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">movie_id</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">                   user_id=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">user_id</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">                   score=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score</span><span class="si">}</span><span class="s2">&gt;&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<p>Let’s break this down. In the first set of the highlighted changes
+is the new definition for the <cite>user_id</cite> attribute:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">user_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;users.user_id&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The column is still an integer, but we’re also declaring it to be a
+<cite>ForeignKey</cite>, which is just a fancy way of saying it references another column
+in another table. The parameter passed to <code class="docutils literal notranslate"><span class="pre">ForeignKey()</span></code> should be a string
+in the format of “table.column_name”. Here, we’re saying that the <cite>user_id</cite>
+column of the <cite>ratings</cite> table refers to the <cite>user_id</cite> column of the <cite>users</cite>
+table:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">user</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span><span class="s2">&quot;User&quot;</span><span class="p">,</span>
+                       <span class="n">backref</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">backref</span><span class="p">(</span><span class="s2">&quot;ratings&quot;</span><span class="p">,</span>
+                                          <span class="n">order_by</span><span class="o">=</span><span class="n">rating_id</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>This line establishes a relationship between the <cite>Rating</cite> and <cite>User</cite> objects,
+along with something called a <cite>backref</cite>. The up-front explanation is hard to
+grasp, so let’s see it in action. Quit your python session and re-run
+<code class="docutils literal notranslate"><span class="pre">model.py</span></code> interactively (you don’t need to remake your tables or re-seed your
+database):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get a single rating</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">Rating</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Here&#39;s the user_id, which is an actual field in the ratings</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># table</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">user_id</span><span class="p">)</span>
+<span class="go">196</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use our new relationship reference to get the actual User</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># object</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">user</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># We can look at attributes on this</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">age</span><span class="p">)</span>
+<span class="go">49</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">zipcode</span><span class="p">)</span>
+<span class="go">55105</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># We can look at the all the ratings made by this user</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">all_ratings</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">ratings</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">all_ratings</span>
+<span class="go">[&lt;Rating ...&gt;, &lt;Rating ...&gt;, ....]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># These are actual ratings objects, so we can look at their</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># attributes</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">ratings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rating_id</span><span class="p">)</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">ratings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">user_id</span><span class="p">)</span>
+<span class="go">196</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">ratings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">movie_id</span><span class="p">)</span>
+<span class="go">242</span>
+</pre></div>
+</div>
+<p>The relationship adds an attribute on ratings objects called <cite>user</cite>. This
+value of this attribute is the same object as if you had queried the
+database directly for that user.</p>
+<p>Furthermore, on a user object, there is an
+attribute named <cite>ratings</cite>. This attribute is a list of all the ratings
+associated with that user, simultaneously queried from the database.</p>
+<div class="admonition note">
+<p class="admonition-title">Voodoo Power Hour</p>
+<div class="admonition-body docutils container">
+<p>The relationship attribute defined on the <cite>Rating</cite>
+class just tells SQLAlchemy how it should construct the <cite>JOIN</cite> clause
+of its <cite>SELECT</cite> statement. It then takes all the results and turns them
+into the correct objects.</p>
+<p>Note that these relationship attributes don’t change the actual tables –
+the data stored in the <code class="docutils literal notranslate"><span class="pre">ratings</span></code> table is still the
+integer <code class="docutils literal notranslate"><span class="pre">movie_id</span></code> and <code class="docutils literal notranslate"><span class="pre">user_id</span></code> fields, for example. These
+<code class="docutils literal notranslate"><span class="pre">movie</span></code> and <code class="docutils literal notranslate"><span class="pre">user</span></code> relationship attributes added to the <cite>Rating</cite>
+class provide a quick and convenient way to get to the related
+movie and user objects, respectively.</p>
+</div>
+</div>
+<p><a class="reference external" href="http://docs.sqlalchemy.org/en/latest/orm/tutorial.html#building-a-relationship" target="_blank">Read more</a>
+about
+<a class="reference external" href="http://docs.sqlalchemy.org/en/latest/orm/relationships.html" target="_blank">SQLAlchemy Relationship Configuration</a>,
+then convince yourself that it somehow is magically updating the database
+correctly.</p>
+</section>
+<section class="section" id="using-flask">
+<h2>Using Flask</h2>
+<p>We’re going to build a Flask app that does the following:</p>
+<ul class="simple">
+<li><p>Has pages for a list of all users and information about a single user</p></li>
+<li><p>Has pages for a list of all movies and information about a single movie</p></li>
+<li><p>Allows users to login and logout</p></li>
+<li><p>Let logged-in users add or update ratings for films</p></li>
+</ul>
+<section class="section" id="base-template">
+<h3>Base Template</h3>
+<p>First, make a <cite>templates/</cite> directory to hold your templates.</p>
+<p>We’ll use the Flask style of having a <cite>base.html</cite> template that should contain
+the common parts of all pages.</p>
+<p>Create a <cite>base.html</cite> template like:</p>
+<div class="highlight-html+jinja notranslate"><div class="highlight"><pre><span></span><span class="cp">&lt;!doctype html&gt;</span>
+<span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>Ratings<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
+
+<span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>
+  Ratings
+  <span class="p">&lt;</span><span class="nt">hr</span><span class="p">&gt;</span>
+
+  <span class="cp">{%</span> <span class="k">block</span> <span class="nv">content</span> <span class="cp">%}</span> put your content here <span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span>
+
+<span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+</section>
+<section class="section" id="homepage">
+<h3>Homepage</h3>
+<p>Then, let’s make a homepage, <cite>homepage.html</cite>:</p>
+<div class="highlight-html+jinja notranslate"><div class="highlight"><pre><span></span><span class="cp">{%</span> <span class="k">extends</span> <span class="s1">&#39;base.html&#39;</span> <span class="cp">%}</span>
+<span class="cp">{%</span> <span class="k">block</span> <span class="nv">content</span> <span class="cp">%}</span>
+
+<span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>Ratings<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>
+
+<span class="p">&lt;</span><span class="nt">h2</span><span class="p">&gt;</span>Movies<span class="p">&lt;/</span><span class="nt">h2</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;/movies&quot;</span><span class="p">&gt;</span>View all movies<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+
+<span class="p">&lt;</span><span class="nt">h2</span><span class="p">&gt;</span>Users<span class="p">&lt;/</span><span class="nt">h2</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;/users&quot;</span><span class="p">&gt;</span>View all users<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+
+<span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span>
+</pre></div>
+</div>
+<p>If you view this page, don’t worry that these links are broken –
+you’ll be making these pages soon.</p>
+<p>Then, let’s look at the skeleton Flask application you were given for this
+exercise:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Movie Ratings.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">jinja2</span> <span class="kn">import</span> <span class="n">StrictUndefined</span>
+
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
+<span class="kn">from</span> <span class="nn">flask_debugtoolbar</span> <span class="kn">import</span> <span class="n">DebugToolbarExtension</span>
+
+<span class="kn">from</span> <span class="nn">model</span> <span class="kn">import</span> <span class="n">connect_to_db</span><span class="p">,</span> <span class="n">db</span>
+
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># Required to use Flask sessions and the debug toolbar</span>
+<span class="n">app</span><span class="o">.</span><span class="n">secret_key</span> <span class="o">=</span> <span class="s2">&quot;ABC&quot;</span>
+
+<span class="c1"># Normally, if you use an undefined variable in Jinja2, it fails</span>
+<span class="c1"># silently. This is horrible. Fix this so that, instead, it raises an</span>
+<span class="c1"># error.</span>
+<span class="n">app</span><span class="o">.</span><span class="n">jinja_env</span><span class="o">.</span><span class="n">undefined</span> <span class="o">=</span> <span class="n">StrictUndefined</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Homepage.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;&lt;html&gt;&lt;body&gt;Placeholder for the homepage.&lt;/body&gt;&lt;/html&gt;&quot;</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># We have to set debug=True here, since it has to be True at the</span>
+    <span class="c1"># point that we invoke the DebugToolbarExtension</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="c1"># make sure templates, etc. are not cached in debug mode</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">jinja_env</span><span class="o">.</span><span class="n">auto_reload</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">debug</span>
+
+    <span class="n">connect_to_db</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+
+    <span class="c1"># Use the DebugToolbar</span>
+    <span class="n">DebugToolbarExtension</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+
+    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Next we’ll modify it to import the following things because we pretty
+much always need them:</p>
+<ul class="simple">
+<li><p>rendering templates</p></li>
+<li><p>our model</p></li>
+<li><p>access to the <cite>request</cite> object (for forms)</p></li>
+<li><p>the ability to redirect</p></li>
+<li><p>message flashing</p></li>
+<li><p>session information</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="p">(</span><span class="n">Flask</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">redirect</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">flash</span><span class="p">,</span>
+                   <span class="n">session</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">model</span> <span class="kn">import</span> <span class="n">User</span><span class="p">,</span> <span class="n">Rating</span><span class="p">,</span> <span class="n">Movie</span><span class="p">,</span> <span class="n">connect_to_db</span><span class="p">,</span> <span class="n">db</span>
+</pre></div>
+</div>
+<p>Wire up the homepage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Homepage.&quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;homepage.html&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Start your app by running <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">server.py</span></code>
+and access it by going to <a class="reference external" href="http://127.0.0.1:5000" target="_blank">http://127.0.0.1:5000</a> in your browser to make
+sure it works.</p>
+</section>
+<section class="section" id="user-list">
+<h3>User List</h3>
+<p>Next, let’s make a view for listing all users.</p>
+<p>It will list users with email addresses and user ids, like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">jessica</span><span class="nd">@gmail</span><span class="o">.</span><span class="n">com</span> <span class="p">(</span><span class="mi">455</span><span class="p">)</span>
+<span class="o">-</span> <span class="n">jane</span><span class="nd">@gmail</span><span class="o">.</span><span class="n">com</span> <span class="p">(</span><span class="mi">900</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To do this, we’ll first need to make a route:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/users&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">user_list</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Show list of users.&quot;&quot;&quot;</span>
+
+    <span class="n">users</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;user_list.html&quot;</span><span class="p">,</span> <span class="n">users</span><span class="o">=</span><span class="n">users</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then we can make our template:</p>
+<div class="highlight-html+jinja notranslate"><div class="highlight"><pre><span></span><span class="cp">{%</span> <span class="k">extends</span> <span class="s1">&#39;base.html&#39;</span> <span class="cp">%}</span>
+<span class="cp">{%</span> <span class="k">block</span> <span class="nv">content</span> <span class="cp">%}</span>
+
+  <span class="p">&lt;</span><span class="nt">h2</span><span class="p">&gt;</span>Users<span class="p">&lt;/</span><span class="nt">h2</span><span class="p">&gt;</span>
+
+  <span class="p">&lt;</span><span class="nt">ul</span><span class="p">&gt;</span>
+    <span class="cp">{%</span> <span class="k">for</span> <span class="nv">user</span> <span class="k">in</span> <span class="nv">users</span> <span class="cp">%}</span>
+      <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;/users/</span><span class="cp">{{</span> <span class="nv">user.user_id</span> <span class="cp">}}</span><span class="s">&quot;</span><span class="p">&gt;</span>
+          <span class="cp">{{</span> <span class="nv">user.email</span> <span class="cp">}}</span> (<span class="cp">{{</span> <span class="nv">user.user_id</span> <span class="cp">}}</span>)
+        <span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
+      <span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+    <span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span>
+  <span class="p">&lt;/</span><span class="nt">ul</span><span class="p">&gt;</span>
+
+<span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span>
+</pre></div>
+</div>
+<p>By switching to SQLAlchemy, we’ve eliminated a good deal of boilerplate code
+that was necessary to interact with our database. Instead, we can directly
+use objects and their attributes without worrying about how to query for them.</p>
+</section>
+</section>
+<section class="section" id="your-tasks">
+<h2>Your Tasks</h2>
+<section class="section" id="adding-new-users">
+<h3>Adding New Users</h3>
+<p>Up until now, we’ve only been storing the anonymized user info from our seed
+file, but to be able to have users that rate movies, they need to be able to
+sign in. For a user to be able to sign in, we need to make a new user in our
+database and store their email and password (good thing we added those
+nullable fields to our model).</p>
+<p>Add a registration form that asks for an email address and password and a route that shows
+the registration form.</p>
+<p>Add a route that processes the registration form, checking to see if a user with that
+email address exists, and if not, creating a new user in the database.</p>
+</section>
+<section class="section" id="handling-login-and-logout">
+<h3>Handling Login and Logout</h3>
+<p>Add a login form and a route that shows the login form.</p>
+<p>Add a route that handles submission of the login form. It should query for that
+email address in the database and, if the email matches the password, log
+the user in – which in our case means adding their user id (which you
+fetched from the database) to the Flask session.</p>
+<p>After logging the user in, you <em>could</em> direct them to  a template that just says “Logged in” – but it would be helpful if, instead, you redirected them back to the homepage. Do that.</p>
+<p>Also, so that people know that logging in works, use the Flask <cite>flash</cite>
+object to add a message like “Logged in,” and update your <cite>base.html</cite> to
+show flashed messages. You can read the docs about message flashing
+<a class="reference external" href="http://flask.pocoo.org/docs/patterns/flashing/" target="_blank">here</a>.</p>
+<p>Once you have redirecting and message flashing working, the logout route
+is pretty straightforward – it just needs to remove the user id from the
+session. It should flash a message like “Logged out” and redirect the user
+back to the homepage.</p>
+</section>
+<section class="section" id="user-details">
+<h3>User Details</h3>
+<p>Make a page that shows information about a particular user, like:</p>
+<ul class="simple">
+<li><p>their age</p></li>
+<li><p>their zipcode</p></li>
+<li><p>the list of movies they rated and the scores for each rating</p></li>
+</ul>
+<p>Make sure the <cite>user_list.html</cite> template you already made sends the site
+user to the right page for the user they clicked on.</p>
+<p>Change the login process route to redirect users to their user page
+when they log in.</p>
+</section>
+<section class="section" id="movie-list">
+<h3>Movie List</h3>
+<p>Make a page that lists all the movies, where each movie title is a link
+to a (soon-to-be-designed) detail page for that movie. Make sure the
+link on the homepage sends you to this movie list page.</p>
+<p>Fix it so that the movies are ordered by title. You may need to look in the
+SQLAlchemy docs for help with this.</p>
+</section>
+<section class="section" id="movie-details">
+<h3>Movie Details</h3>
+<p>Make a page that shows information about a particular movie, including
+a list of all the ratings that movie has received.</p>
+<p>When the site user is logged in and viewing a movie, they should be able
+to set a rating for that movie. Make a form-processing route for this –
+and be sure to handle both the case where this is a <em>new</em> rating and
+the case where this is updating an <em>existing</em> rating.</p>
+</section>
+<section class="section" id="thoughts">
+<h3>Thoughts</h3>
+<p>These will take you quite a while. Don’t forget to add things like docstrings
+and comments to your code – be kind to your future self.</p>
+</section>
+<section class="section" id="the-end">
+<h3>The End</h3>
+<p>Congratulations!</p>
+<p>You’ve completed an exercise in databases and web development.</p>
+<p>Onward and upward to <a class="reference external" href="https://ed.devmountain.com/materials/exercises/ratings/index-3.html">Further Study</a>, where we add the machine
+learning parts.</p>
+</section>
+</section>
+</section>
+
+        </main>
+
+        <footer id="page-footer">
+            <p>&copy; 2022 Devmountain</p>
+        </footer>
+      </div>
+
+      <script src="_static/main.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+  </body>
+</html>
