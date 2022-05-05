@@ -2,10 +2,14 @@
 
 from jinja2 import StrictUndefined
 
-from flask import Flask
+from flask import Flask, render_template, redirect, request, flash, session, url_for
 from flask_debugtoolbar import DebugToolbarExtension
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField, PasswordField, EmailField
+from wtforms.validators import DataRequired
+import tkinter
 
-from model import connect_to_db, db
+from model import connect_to_db, db, User, Rating, Movie
 
 
 app = Flask(__name__)
@@ -17,12 +21,46 @@ app.secret_key = "ABC"
 # silently. This is horrible. Fix this so that, instead, it raises an
 # error.
 app.jinja_env.undefined = StrictUndefined
+WTF_CSRF_SECRET_KEY = 'secretsecretshurtsomeone'
+
+
+class RegisterForm(FlaskForm):
+    email = EmailField('email', render_kw={'placeholder':"Email Address"}, validators=[DataRequired()])
+    password = PasswordField('password', render_kw={'placeholder':"Password"}, validators=[DataRequired()])
+    submit = SubmitField('Submit')
 
 
 @app.route('/')
 def index():
     """Homepage."""
-    return "<html><body>Placeholder for the homepage.</body></html>"
+    return render_template('homepage.html')
+
+
+@app.route('/users')
+def user_list():
+    users = User.query.all()
+    return render_template('user_list.html', users=users)
+
+
+@app.route('/register', methods=["GET", "POST"])
+def register():
+    form = RegisterForm()
+    if form.validate_on_submit():
+        if User.query.filter_by(form.email.data).first():
+            tkinter.messagebox.showinfo(title='Already Registered', message='This email was already registered with an account')
+            return redirect(url_for('register'))
+        else:
+            user = User(email="{form.email.data}", password="{form.password.data}")
+            db.session.add(user)
+            db.session.commit()
+            return redirect(url_for('profile', user=user))
+    return render_template('register.html', form=form)
+
+
+@app.route('/profile')
+def profile(user):
+    return render_template('profile.html', user=user)
+
 
 
 if __name__ == "__main__":

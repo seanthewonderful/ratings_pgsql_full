@@ -1,12 +1,18 @@
-{% extends base.html %}
+{% extends 'base.html' %}
 {% block content %} 
+
+<header>
+    <button class="register_btn"><a href="{{ url_for('register') }}">Register</a></button>
+</header>
 
 <h1>Ratings</h1>
 
 <h2>Movies</h2>
-<p><a href="{{ url_for('movies') }}">View All Movies</a></p>
+
+<p><a href="#"">View All Movies</a></p>
 
 <h2>Users</h2>
-<p><a href="{{ url_for('users') }}">View All Users</a></p>
+
+<p><a href="{{ url_for('user_list') }}">View All Users</a></p>
 
 {% endblock %} 
