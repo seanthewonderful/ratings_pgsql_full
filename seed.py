@@ -56,6 +56,7 @@ def load_movies():
                       released_at=released_at,
                       imdb_url=imdb_url)
         db.session.add(movie)
+        
     db.session.commit()
 
 
@@ -65,7 +66,7 @@ def load_ratings():
     Rating.query.delete()
     for row in open("seed_data/u.data"):
         row = row.rstrip()
-        user_id, movie_id, score, timestamp = row.split("|")
+        user_id, movie_id, score, timestamp = row.split("\t")
         user_id = int(user_id)
         movie_id = int(movie_id)
         score = int(score)
