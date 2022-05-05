@@ -7,7 +7,6 @@ from flask_debugtoolbar import DebugToolbarExtension
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, EmailField
 from wtforms.validators import DataRequired
-import tkinter
 
 from model import connect_to_db, db, User, Rating, Movie
 
@@ -16,12 +15,13 @@ app = Flask(__name__)
 
 # Required to use Flask sessions and the debug toolbar
 app.secret_key = "ABC"
-
+WTF_CSRF_SECRET_KEY = 'a random string'
 # Normally, if you use an undefined variable in Jinja2, it fails
 # silently. This is horrible. Fix this so that, instead, it raises an
 # error.
 app.jinja_env.undefined = StrictUndefined
-WTF_CSRF_SECRET_KEY = 'secretsecretshurtsomeone'
+app.config["DEBUG_TB_INTERCEPT_REDIRECTS"]=False
+
 
 
 class RegisterForm(FlaskForm):
@@ -31,8 +31,10 @@ class RegisterForm(FlaskForm):
 
 
 @app.route('/')
-def index():
+def index(user):
     """Homepage."""
+    if user in session:
+        return render_template('homepage.html', user=user)
     return render_template('homepage.html')
 
 
@@ -42,18 +44,30 @@ def user_list():
     return render_template('user_list.html', users=users)
 
 
+@app.route('/login')
+def login():
+    form = RegisterForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(form.email.data).one()
+        if user.password == form.password.data:
+            session[user.user_id] = user
+            return render_template('homepage.html', user=user)
+        else: 
+            return redirect(url_for('login'))
+
+
 @app.route('/register', methods=["GET", "POST"])
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        if User.query.filter_by(form.email.data).first():
-            tkinter.messagebox.showinfo(title='Already Registered', message='This email was already registered with an account')
+        print(form.email.data)
+        if User.query.filter_by(email=form.email.data).first():
             return redirect(url_for('register'))
         else:
-            user = User(email="{form.email.data}", password="{form.password.data}")
+            user = User(email=form.email.data, password=form.password.data)
             db.session.add(user)
             db.session.commit()
-            return redirect(url_for('profile', user=user))
+            return render_template('profile.html', user=user)
     return render_template('register.html', form=form)
 
 

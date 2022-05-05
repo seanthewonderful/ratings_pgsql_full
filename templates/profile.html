@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %} 
+
+<title>Welcome, {{ user.email }}</title>
+
+<h1>Logged in as {{ user.email }}</h1>
+
+<form action="#" method="POST">
+    <input name="age">Enter Age</input>
+    <label for="age">Enter Age</label>
+    <input name="zipcode">Enter Zipcode</input>
+    <label for="zipcode">Enter Zipcode</label>
+</form>
+
+{% endblock %}

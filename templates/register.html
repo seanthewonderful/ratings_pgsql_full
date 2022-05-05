@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
 
+
 {% block content %} 
 
-<form method="POST">
+<form method="post" action="{{ url_for('register') }}">
+    {{ form.csrf_token }}
     {{ form.email }}
     {{ form.password }}
     {{ form.submit }}
